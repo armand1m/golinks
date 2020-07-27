@@ -1,12 +1,27 @@
 version: '3.1'
 
 services:
+  app:
+    build:
+      context: .
+    image: armand1m/golinks:latest
+    ports:
+      - 3000:3000/tcp
+    networks:
+      - overlay
+    environment:
+      DATABASE_CONNECTION_STRING: postgres://dev:dev@db:5432/golinks
+      DATABASE_SCHEMA: app_public
+      NODE_ENV: production
+
   db:
     image: postgres
     environment:
       POSTGRES_DB: golinks
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: dev
+    networks:
+      - overlay
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./database/1-schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
@@ -16,3 +31,6 @@ services:
 volumes:
   db-data:
     driver: local
+
+networks:
+  overlay:
