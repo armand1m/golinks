@@ -2,10 +2,10 @@ FROM node:alpine AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY . .
-RUN yarn --production
+RUN yarn
 RUN yarn build
 
-FROM mhart/alpine-node:base
+FROM node:alpine
 WORKDIR /app
 
 ENV NODE_ENV production
