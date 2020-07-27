@@ -27,6 +27,7 @@
     "formik": "^2.1.5",
     "graphql": "^14.6.0",
     "graphql-tag": "^2.10.3",
+    "graphql-tools": "^6.0.15",
     "next": "latest",
     "postgraphile": "^4.7.0",
     "react": "^16.13.1",
