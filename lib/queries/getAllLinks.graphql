@@ -1,0 +1,10 @@
+query getAllLinks {
+  links {
+    nodes {
+      id
+      url
+      alias
+      usage
+    }
+  }
+}

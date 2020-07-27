@@ -1,0 +1,7 @@
+query GetLinkByAlias($alias: String!) {
+  linkByAlias(alias: $alias) {
+    url
+    alias
+    usage
+  }
+}

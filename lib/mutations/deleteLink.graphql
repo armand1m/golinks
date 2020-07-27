@@ -1,0 +1,6 @@
+mutation DeleteLink($id: UUID!) {
+  __typename
+  deleteLink(input: {id: $id}) {
+    deletedLinkNodeId
+  }
+}

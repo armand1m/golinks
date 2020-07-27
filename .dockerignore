@@ -1,0 +1,11 @@
+./.git/
+./node_modules
+./build
+./coverage
+./tests/stress-testing
+.dockerignore
+.gitignore
+Dockerfile
+cloudbuild.yaml
+cloudbuild-pr.yaml
+./kubernetes

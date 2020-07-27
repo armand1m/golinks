@@ -1,9 +1,397 @@
-type User {
-  id: ID!
-  name: String!
-  status: String!
+"""All input for the create `Link` mutation."""
+input CreateLinkInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `Link` to be created by this mutation."""
+  link: LinkInput!
 }
 
-type Query {
-  viewer: User!
+"""The output of our create `Link` mutation."""
+type CreateLinkPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `Link` that was created by this mutation."""
+  link: Link
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `Link`. May be used by Relay 1."""
+  linkEdge(
+    """The method to use when ordering `Link`."""
+    orderBy: [LinksOrderBy!] = [PRIMARY_KEY_ASC]
+  ): LinksEdge
 }
+
+"""A location in a connection that can be used for resuming pagination."""
+scalar Cursor
+
+"""
+A point in time as described by the [ISO
+8601](https://en.wikipedia.org/wiki/ISO_8601) standard. May or may not include a timezone.
+"""
+scalar Datetime
+
+"""All input for the `deleteLinkByAlias` mutation."""
+input DeleteLinkByAliasInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  alias: String!
+}
+
+"""All input for the `deleteLinkByNodeId` mutation."""
+input DeleteLinkByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `Link` to be deleted.
+  """
+  nodeId: ID!
+}
+
+"""All input for the `deleteLink` mutation."""
+input DeleteLinkInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""The output of our delete `Link` mutation."""
+type DeleteLinkPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `Link` that was deleted by this mutation."""
+  link: Link
+  deletedLinkNodeId: ID
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `Link`. May be used by Relay 1."""
+  linkEdge(
+    """The method to use when ordering `Link`."""
+    orderBy: [LinksOrderBy!] = [PRIMARY_KEY_ASC]
+  ): LinksEdge
+}
+
+type Link implements Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+  id: UUID!
+  alias: String!
+  url: String!
+  usage: Int!
+  createdAt: Datetime!
+}
+
+"""
+A condition to be used against `Link` object types. All fields are tested for equality and combined with a logical ‘and.’
+"""
+input LinkCondition {
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `alias` field."""
+  alias: String
+}
+
+"""An input for mutations affecting `Link`"""
+input LinkInput {
+  id: UUID
+  alias: String!
+  url: String!
+  usage: Int
+  createdAt: Datetime
+}
+
+"""Represents an update to a `Link`. Fields that are set will be updated."""
+input LinkPatch {
+  id: UUID
+  alias: String
+  url: String
+  usage: Int
+  createdAt: Datetime
+}
+
+"""A connection to a list of `Link` values."""
+type LinksConnection {
+  """A list of `Link` objects."""
+  nodes: [Link!]!
+
+  """
+  A list of edges which contains the `Link` and cursor to aid in pagination.
+  """
+  edges: [LinksEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Link` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Link` edge in the connection."""
+type LinksEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Link` at the end of the edge."""
+  node: Link!
+}
+
+"""Methods to use when ordering `Link`."""
+enum LinksOrderBy {
+  NATURAL
+  ID_ASC
+  ID_DESC
+  ALIAS_ASC
+  ALIAS_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""
+The root mutation type which contains root level fields which mutate data.
+"""
+type Mutation {
+  """Creates a single `Link`."""
+  createLink(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateLinkInput!
+  ): CreateLinkPayload
+
+  """Updates a single `Link` using its globally unique id and a patch."""
+  updateLinkByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateLinkByNodeIdInput!
+  ): UpdateLinkPayload
+
+  """Updates a single `Link` using a unique key and a patch."""
+  updateLink(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateLinkInput!
+  ): UpdateLinkPayload
+
+  """Updates a single `Link` using a unique key and a patch."""
+  updateLinkByAlias(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateLinkByAliasInput!
+  ): UpdateLinkPayload
+
+  """Deletes a single `Link` using its globally unique id."""
+  deleteLinkByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteLinkByNodeIdInput!
+  ): DeleteLinkPayload
+
+  """Deletes a single `Link` using a unique key."""
+  deleteLink(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteLinkInput!
+  ): DeleteLinkPayload
+
+  """Deletes a single `Link` using a unique key."""
+  deleteLinkByAlias(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteLinkByAliasInput!
+  ): DeleteLinkPayload
+}
+
+"""An object with a globally unique `ID`."""
+interface Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+}
+
+"""Information about pagination in a connection."""
+type PageInfo {
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: Cursor
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: Cursor
+}
+
+"""The root query type which gives access points into the data universe."""
+type Query implements Node {
+  """
+  Exposes the root query type nested one level down. This is helpful for Relay 1
+  which can only query top level fields if they are in a particular form.
+  """
+  query: Query!
+
+  """
+  The root query type must be a `Node` to work well with Relay 1 mutations. This just resolves to `query`.
+  """
+  nodeId: ID!
+
+  """Fetches an object given its globally unique `ID`."""
+  node(
+    """The globally unique `ID`."""
+    nodeId: ID!
+  ): Node
+
+  """Reads and enables pagination through a set of `Link`."""
+  links(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `Link`."""
+    orderBy: [LinksOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: LinkCondition
+  ): LinksConnection
+  link(id: UUID!): Link
+  linkByAlias(alias: String!): Link
+
+  """Reads a single `Link` using its globally unique `ID`."""
+  linkByNodeId(
+    """The globally unique `ID` to be used in selecting a single `Link`."""
+    nodeId: ID!
+  ): Link
+}
+
+"""All input for the `updateLinkByAlias` mutation."""
+input UpdateLinkByAliasInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `Link` being updated.
+  """
+  patch: LinkPatch!
+  alias: String!
+}
+
+"""All input for the `updateLinkByNodeId` mutation."""
+input UpdateLinkByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `Link` to be updated.
+  """
+  nodeId: ID!
+
+  """
+  An object where the defined keys will be set on the `Link` being updated.
+  """
+  patch: LinkPatch!
+}
+
+"""All input for the `updateLink` mutation."""
+input UpdateLinkInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `Link` being updated.
+  """
+  patch: LinkPatch!
+  id: UUID!
+}
+
+"""The output of our update `Link` mutation."""
+type UpdateLinkPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `Link` that was updated by this mutation."""
+  link: Link
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `Link`. May be used by Relay 1."""
+  linkEdge(
+    """The method to use when ordering `Link`."""
+    orderBy: [LinksOrderBy!] = [PRIMARY_KEY_ASC]
+  ): LinksEdge
+}
+
+"""
+A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122).
+"""
+scalar UUID

@@ -1,0 +1,10 @@
+mutation UpdateLinkUsage($alias: String!, $usage: Int!) {
+  __typename
+  updateLinkByAlias(input: {patch: {usage: $usage}, alias: $alias}) {
+    link {
+      id
+      alias
+      usage
+    }
+  }
+}

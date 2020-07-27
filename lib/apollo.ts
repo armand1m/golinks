@@ -20,6 +20,7 @@ function createIsomorphLink(context: ResolverContext = {}) {
     return new HttpLink({
       uri: '/api/graphql',
       credentials: 'same-origin',
+      headers: {}
     })
   }
 }

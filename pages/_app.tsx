@@ -1,4 +1,5 @@
 import { AppProps } from 'next/app'
+import { ThemeProvider } from 'fannypack';
 import { ApolloProvider } from '@apollo/react-hooks'
 import { useApollo } from '../lib/apollo'
 
@@ -7,7 +8,9 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <ApolloProvider client={apolloClient}>
-      <Component {...pageProps} />
+      <ThemeProvider>
+        <Component {...pageProps} />
+      </ThemeProvider>
     </ApolloProvider>
   )
 }

@@ -1,0 +1,11 @@
+mutation CreateLink($alias: String!, $url: String!) {
+  createLink(input: {link: {alias: $alias, url: $url}}) {
+    link {
+      id,
+      url,
+      alias,
+      usage,
+      createdAt,
+    }
+  }
+}
