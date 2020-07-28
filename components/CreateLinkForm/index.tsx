@@ -1,9 +1,10 @@
 import {
   Link,
-  LayoutSet,
+  Stack,
+  FieldStack,
   Button,
   InputField,
-} from 'fannypack'
+} from 'bumbag'
 import * as Yup from 'yup';
 import { Formik, Form, Field, FormikHelpers } from "formik";
 
@@ -41,7 +42,7 @@ export const CreateLinkForm: React.FC<Props> = ({
       }}
     >
       <Form>
-        <LayoutSet spacing="major-2">
+        <FieldStack>
           <Field
             component={InputField.Formik}
             name="alias"
@@ -58,7 +59,7 @@ export const CreateLinkForm: React.FC<Props> = ({
           />
 
           <Button type="submit">Create</Button>
-        </LayoutSet>
+        </FieldStack>
       </Form>
     </Formik>
   )

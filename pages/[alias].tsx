@@ -2,11 +2,11 @@ import { useEffect, useCallback } from 'react';
 import * as Yup from 'yup';
 import { useRouter } from 'next/router';
 import {
-  Page,
+  PageContent,
   Heading,
   Text,
   Callout,
-} from 'fannypack'
+} from 'bumbag'
 
 import { useGetLinkByAliasQuery } from '../lib/queries/getLinkByAlias.graphql'
 import { useUpdateLinkUsageMutation } from '../lib/mutations/updateLinkUsage.graphql';
@@ -48,7 +48,7 @@ const Redirect: React.FC<RedirectProps> = ({ alias }) => {
   }, [data]);
   
   return (
-    <Page.Content>
+    <PageContent>
       <Callout>
         {loading === true && (
           <Heading>Loading..</Heading>
@@ -68,7 +68,7 @@ const Redirect: React.FC<RedirectProps> = ({ alias }) => {
           </>
         )}
       </Callout>
-    </Page.Content>
+    </PageContent>
   );
 }
 
@@ -77,12 +77,12 @@ const Alias = () => {
 
   if (!RouterQuerySchema.isValidSync(router.query)) {
     return (
-      <Page.Content>
+      <PageContent>
         <Callout>
           <Heading>Don't.</Heading>
           <Text>Just don't.</Text>
         </Callout>
-      </Page.Content>
+      </PageContent>
     )
   }
 

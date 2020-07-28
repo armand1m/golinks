@@ -26,7 +26,7 @@ services:
       - overlay
     volumes:
       - db-data:/var/lib/postgresql/data
-      - ./database/1-schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./database/1-links-table.sql:/docker-entrypoint-initdb.d/1-links-table.sql
     ports:
       - 5432:5432/tcp
  

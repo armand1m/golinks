@@ -3,7 +3,7 @@ import {
   Text,
   Link as FannyLink,
   Button,
-} from 'fannypack'
+} from 'bumbag'
 
 import { GetAllLinksQuery } from '../../lib/queries/getAllLinks.graphql'
 
@@ -25,7 +25,7 @@ export const LinkTable: React.FC<Props> = ({
   }
 
   return (
-    <Table>
+    <Table isResponsive>
       <Table.Head>
         <Table.Row>
           <Table.HeadCell>Alias</Table.HeadCell>
@@ -42,7 +42,6 @@ export const LinkTable: React.FC<Props> = ({
                 <Table.Cell>{link.alias}</Table.Cell>
                 <Table.Cell>
                   <FannyLink
-                    target="_blank"
                     href={link.url}
                     style={{
                       display: "block",

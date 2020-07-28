@@ -1,5 +1,5 @@
 import { AppProps } from 'next/app'
-import { ThemeProvider } from 'fannypack';
+import { Provider as ThemeProvider } from 'bumbag';
 import { ApolloProvider } from '@apollo/react-hooks'
 import { useApollo } from '../lib/apollo'
 

@@ -1,13 +1,13 @@
 import {
   Modal,
-  DialogModal,
+  Dialog,
   Box,
-  Page,
+  PageContent,
   Card,
-  LayoutSet,
+  Stack,
   Heading,
   Button,
-} from 'fannypack'
+} from 'bumbag'
 
 import { useGetAllLinksQuery } from '../lib/queries/getAllLinks.graphql'
 import { useCreateLinkMutation } from '../lib/mutations/createLink.graphql'
@@ -19,41 +19,38 @@ const Index = () => {
   const [createLink] = useCreateLinkMutation();
   const [deleteLink] = useDeleteLinkMutation();
   const { data, refetch } = useGetAllLinksQuery();
+  const createLinkModal = Modal.useState();
+
 
   return (
-    <Page.Content>
-      <LayoutSet spacing="major-2">
+    <PageContent>
+      <Stack spacing="major-2">
         <Box>
           <Heading>go.armand1m.dev</Heading>
         </Box>
 
         <Card>
-          <LayoutSet>
-            <Modal.Container>
-              {modal => (
-                <Box>
-                  <Button use={Modal.Show} {...modal}>
-                    Create
-                  </Button>
-                  <DialogModal showCloseButton title="Create Go Link" {...modal}>
-                    <CreateLinkForm
-                      onSubmit={async (values, form) => {
-                        await createLink({
-                          variables: values,
-                        });
+          <Stack>
+            <>
+              <Modal.Disclosure use={Button} {...createLinkModal}>
+                Create
+              </Modal.Disclosure>
+              <Dialog.Modal showCloseButton title="Create Go Link" {...createLinkModal}>
+                <CreateLinkForm
+                  onSubmit={async (values, form) => {
+                    await createLink({
+                      variables: values,
+                    });
 
-                        await refetch();
+                    await refetch();
 
-                        /** @ts-ignore */
-                        modal.hide();
+                    createLinkModal.hide();
 
-                        form.resetForm();
-                      }}
-                    />
-                  </DialogModal>
-                </Box>
-              )}
-            </Modal.Container>
+                    form.resetForm();
+                  }}
+                />
+              </Dialog.Modal>
+            </>
 
             {data !== undefined && data !== null && (
               <LinkTable
@@ -69,10 +66,10 @@ const Index = () => {
                 }}
               />
             )}
-          </LayoutSet>
+          </Stack>
         </Card>
-      </LayoutSet>
-    </Page.Content>
+      </Stack>
+    </PageContent>
   )
 }
 

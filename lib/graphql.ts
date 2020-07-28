@@ -10,6 +10,8 @@ const commonProperties: Partial<PostGraphileOptions> = {
   graphqlRoute: "/api/graphql",
   graphiqlRoute: "/api/graphiql",
   legacyRelations: "omit",
+  // jwtSecret: process.env.JWT_SECRET || "dev-secret",
+  // jwtPgTypeIdentifier: "public.jwt_token",
 };
 
 const devProperties: PostGraphileOptions = {
