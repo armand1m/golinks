@@ -4,9 +4,9 @@ metadata:
   name: golinks
 spec:
   hosts:
-  - go.armand1m.dev
+  - ${HOSTNAME}
   gateways:
-  - ingressgateway-workload
+  - ${ISTIO_GATEWAY_NAME}
   http:
   - match:
     - port: 443

@@ -3,19 +3,19 @@ create function public.authenticate(
   password text
 ) returns public.jwt_token as $$
 declare
-  account my_private_schema.person_account;
+  user app_private.users;
 begin
-  select a.* into account
-    from my_private_schema.person_account as a
-    where a.email = authenticate.email;
+  select u.* into user
+    from app_private.users as u
+    where u.email = authenticate.email;
 
-  if account.password_hash = crypt(password, account.password_hash) then
+  if user.password_hash = crypt(authenticate.password, user.password_hash) then
     return (
       'person_role',
       extract(epoch from now() + interval '7 days'),
-      account.person_id,
-      account.is_admin,
-      account.username
+      user.id,
+      user.is_admin,
+      user.username
     )::public.jwt_token;
   else
     return null;

@@ -35,14 +35,28 @@ This is my personal version of Go Links built with [Next.js](https://nextjs.org/
 
 A Docker Image is available at Docker Hub: https://hub.docker.com/r/armand1m/golinks
 
-## Deploying to Kubernetes
+## Deploying to Kubernetes (GKE + Cloud SQL)
 
 > Make sure to change the manifests accordingly to your environment.
 
 Check the `./kubernetes` folder for k8s manifests content.
 These manifests deploy the application together with a `cloud_sql_proxy` sidecar to allow networking with Google Cloud SQL.
 
-Create a deployment and service manifests:
+Create a secret to keep the connection string:
+
+```sh
+kubectl create secret generic golinks-database \
+  --from-literal=connectionstring='postgres://<user>:<pass>@<host>:5432/golinks'
+```
+
+Create a secret to keep the Cloud SQL service account:
+
+```sh
+kubectl create secret generic cloudsql-service-account \
+  --from-file=service-account.json=./service-account.json
+```
+
+Create a deployment and service:
 
 ```sh
 kubectl apply -f ./kubernetes/deployment.yaml
@@ -115,6 +129,12 @@ export DATABASE_NAME="golinks"
 export DATABASE_SCHEMA="public"
 
 docker-compose -f ./docker-compose-cloud-sql.yml up
+```
+
+### Cleaning Local Database
+
+```sh
+./clean-local-database.sh
 ```
 
 ### Building docker image

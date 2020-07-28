@@ -15,23 +15,23 @@ spec:
         version: v1
     spec:
       volumes:
-      - name: lobster-service-account 
+      - name: cloudsql-service-account
         secret:
-          secretName: lobster-service-account
+          secretName: cloudsql-service-account
       containers:
       - name: cloud-sql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.17
         command:
           - "/cloud_sql_proxy"
-          - "-instances=prismatic-petal-263719:us-central1:dev-pgsql=tcp:0.0.0.0:5432"
+          - "-instances=${GOOGLE_CLOUD_PROJECT}:${GOOGLE_CLOUD_REGION}:${CLOUDSQL_INSTANCE_NAME}=tcp:0.0.0.0:5432"
           - "-credential_file=/secrets/service-account.json"
         securityContext:
           runAsNonRoot: true
         volumeMounts:
-        - name: lobster-service-account
+        - name: cloudsql-service-account
           mountPath: /secrets/
           readOnly: true
-      - image: armand1m/golinks:sha-1e34f13
+      - image: armand1m/golinks:latest
         imagePullPolicy: IfNotPresent
         name: golinks 
         ports:

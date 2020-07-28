@@ -27,6 +27,9 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./database/1-links-table.sql:/docker-entrypoint-initdb.d/1-links-table.sql
+      - ./database/2-jwt-token-type.sql:/docker-entrypoint-initdb.d/2-jwt-token-type.sql
+      - ./database/3-users-table.sql:/docker-entrypoint-initdb.d/3-users-table.sql
+      - ./database/4-authenticate-function.sql:/docker-entrypoint-initdb.d/4-authenticate-function.sql
     ports:
       - 5432:5432/tcp
  
