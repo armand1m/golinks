@@ -1,10 +1,37 @@
 # golinks
 
-This is my personal version of golinks built with Next.js and GraphQL.
+This application is deployed at https://go.armand1m.dev
 
-The database is a PostgreSQL database, and the GraphQL API is generated using Postgraphile.
+This is my personal version of Go Links built with [Next.js](https://nextjs.org/) and [GraphQL](http://graphql.org/).
 
-PostGraphile is then used as a module and served through Next.js routes itself, hence making CORS unnecessary.
+The database is a [PostgreSQL 12.x](http://postgresql.org/) database, and the GraphQL API is generated using [Postgraphile](https://www.graphile.org/postgraphile/). PostGraphile is then used as a NPM module and served through Next.js routes itself.
+
+<div style="max-width: 700px">
+  <img src="./.github/redirect.gif?raw=true">
+</div>
+
+## Related
+
+ - [golinks.ncsu.edu](https://golinks.ncsu.edu/)
+ - [go.middlebury.edu](http://go.middlebury.edu/)
+ - [brown.edu/go](https://ithelp.brown.edu/kb/articles/create-a-go-link-shortened-brown-url)
+ - [github.com/kellegous/go](https://github.com/kellegous/go)
+ - [The quick and simple guide to go links](https://www.trot.to/go-links)
+ - [Google's go link culture](https://yiou.me/blog/posts/google-go-link)
+
+## Feature Checklist
+
+- [x] Create Links
+- [x] Delete Links
+- [ ] Edit Links
+- [x] Redirect Links
+- [x] Link Usage Count
+- [ ] Auth
+- [ ] Security
+- [ ] Link Description
+- [ ] Link Suggestion on 404
+- [ ] Link Usage Metrics
+- [ ] Link Ownership
 
 ## Developing
 
@@ -59,7 +86,7 @@ docker-compose -f ./docker-compose-cloud-sql.yml up
 docker build . -t armand1m/golinks
 ```
 
-### Deploying to Kubernetes
+## Deploying to Kubernetes
 
 > Make sure to change the manifests accordingly to your environment.
 
@@ -73,7 +100,7 @@ kubectl apply -f ./kubernetes/deployment.yaml
 kubectl apply -f ./kubernetes/service.yaml
 ```
 
-#### Istio
+### Istio
 
 > Make sure to change the manifests accordingly to your environment.
 
@@ -83,3 +110,11 @@ Create the virtual service and destination rules:
 kubectl apply -f ./kubernetes/istio/virtual-service.yaml
 kubectl apply -f ./kubernetes/istio/destination-rule.yaml
 ```
+
+## Stargazers
+
+[![Stargazers over time](https://starchart.cc/armand1m/golinks.svg)](https://starchart.cc/armand1m/golinks)
+
+## License
+
+MIT © [Armando Magalhaes](https://github.com/armand1m)
