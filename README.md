@@ -4,8 +4,6 @@ This application is deployed at https://go.armand1m.dev
 
 This is my personal version of Go Links built with [Next.js](https://nextjs.org/) and [GraphQL](http://graphql.org/).
 
-The database is a [PostgreSQL 12.x](http://postgresql.org/) database, and the GraphQL API is generated using [Postgraphile](https://www.graphile.org/postgraphile/). PostGraphile is then used as a NPM module and served through Next.js routes itself.
-
 <div style="max-width: 700px">
   <img src="./.github/redirect.gif?raw=true">
 </div>
@@ -33,7 +31,46 @@ The database is a [PostgreSQL 12.x](http://postgresql.org/) database, and the Gr
 - [ ] Link Usage Metrics
 - [ ] Link Ownership
 
+## Deploying
+
+A Docker Image is available at Docker Hub: https://hub.docker.com/r/armand1m/golinks
+
+## Deploying to Kubernetes
+
+> Make sure to change the manifests accordingly to your environment.
+
+Check the `./kubernetes` folder for k8s manifests content.
+These manifests deploy the application together with a `cloud_sql_proxy` sidecar to allow networking with Google Cloud SQL.
+
+Create a deployment and service manifests:
+
+```sh
+kubectl apply -f ./kubernetes/deployment.yaml
+kubectl apply -f ./kubernetes/service.yaml
+```
+
+### Istio
+
+> Make sure to change the manifests accordingly to your environment.
+
+Create the virtual service and destination rules:
+
+```sh
+kubectl apply -f ./kubernetes/istio/virtual-service.yaml
+kubectl apply -f ./kubernetes/istio/destination-rule.yaml
+```
+
 ## Developing
+
+armand1m/golinks is a Next.js app using GraphQL.
+
+The database must be a [PostgreSQL 12.x](http://postgresql.org/) database as the GraphQL API is generated using [Postgraphile](https://www.graphile.org/postgraphile/). 
+
+PostGraphile is then used as a NPM module and served through Next.js routes itself, so you don't have to worry about CORS, and the api is initialized together with the Next.js application.
+
+GraphQL Type definitions are generated on application startup during development, so make sure your database executed the initialization scripts during startup as PostGraphile will infer them to the generate the `type-defs.graphqls` file. 
+
+`graphql-let` then is used to generate type definitions in Typescript for development use.
 
 ### Local Database with watch mode:
 
@@ -84,31 +121,6 @@ docker-compose -f ./docker-compose-cloud-sql.yml up
 
 ```sh
 docker build . -t armand1m/golinks
-```
-
-## Deploying to Kubernetes
-
-> Make sure to change the manifests accordingly to your environment.
-
-Check the `./kubernetes` folder for k8s manifests content.
-These manifests deploy the application together with a `cloud_sql_proxy` sidecar to allow networking with Google Cloud SQL.
-
-Create a deployment and service manifests:
-
-```sh
-kubectl apply -f ./kubernetes/deployment.yaml
-kubectl apply -f ./kubernetes/service.yaml
-```
-
-### Istio
-
-> Make sure to change the manifests accordingly to your environment.
-
-Create the virtual service and destination rules:
-
-```sh
-kubectl apply -f ./kubernetes/istio/virtual-service.yaml
-kubectl apply -f ./kubernetes/istio/destination-rule.yaml
 ```
 
 ## Stargazers
