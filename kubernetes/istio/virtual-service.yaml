@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: golinks
+spec:
+  hosts:
+  - go.armand1m.dev
+  gateways:
+  - ingressgateway-workload
+  http:
+  - match:
+    - port: 443
+    route:
+    - destination:
+        host: golinks
+        port:
+          number: 3000

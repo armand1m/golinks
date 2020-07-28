@@ -1,0 +1,9 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: golinks
+spec:
+  host: golinks
+  trafficPolicy:
+    tls:
+      mode: DISABLE

@@ -11,8 +11,10 @@ services:
       - overlay
     environment:
       DATABASE_CONNECTION_STRING: postgres://dev:dev@db:5432/golinks
-      DATABASE_SCHEMA: app_public
+      DATABASE_SCHEMA: public
       NODE_ENV: production
+    depends_on:
+      - db
 
   db:
     image: postgres

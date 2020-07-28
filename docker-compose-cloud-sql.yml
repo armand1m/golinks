@@ -1,0 +1,37 @@
+version: '3.1'
+
+services:
+  app:
+    build:
+      context: .
+    image: armand1m/golinks:latest
+    ports:
+      - 3000:3000/tcp
+    networks:
+      - overlay
+    environment:
+      DATABASE_CONNECTION_STRING: postgres://${DATABASE_USER}:${DATABASE_PASS}@db:5432/${DATABASE_NAME}
+      DATABASE_SCHEMA: ${DATABASE_SCHEMA}
+      NODE_ENV: production
+    depends_on:
+      - db
+
+  db:
+    image: gcr.io/cloudsql-docker/gce-proxy:1.17
+    command:
+      - "/cloud_sql_proxy"
+      - "-instances=${CLOUDSQL_INSTANCE}"
+      - "-credential_file=/keyfile.json"
+    volumes:
+     - ${GCP_KEY_PATH}:/keyfile.json:ro
+     - cloudsql:/cloudsql
+    networks:
+      - overlay
+    ports:
+      - 5432:5432/tcp
+ 
+volumes:
+  cloudsql:
+
+networks:
+  overlay:

@@ -49,6 +49,8 @@ input DeleteLinkByAliasInput {
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
+
+  """The alias for an url. It must be unique."""
   alias: String!
 }
 
@@ -73,6 +75,8 @@ input DeleteLinkInput {
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
+
+  """The id for a link alias."""
   id: UUID!
 }
 
@@ -100,15 +104,26 @@ type DeleteLinkPayload {
   ): LinksEdge
 }
 
+"""A link alias posted by an user."""
 type Link implements Node {
   """
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
   nodeId: ID!
+
+  """The id for a link alias."""
   id: UUID!
+
+  """The alias for an url. It must be unique."""
   alias: String!
+
+  """The link alias url."""
   url: String!
+
+  """The amount of times someone accessed through this link alias."""
   usage: Int!
+
+  """The time this link alias was created."""
   createdAt: Datetime!
 }
 
@@ -125,19 +140,37 @@ input LinkCondition {
 
 """An input for mutations affecting `Link`"""
 input LinkInput {
+  """The id for a link alias."""
   id: UUID
+
+  """The alias for an url. It must be unique."""
   alias: String!
+
+  """The link alias url."""
   url: String!
+
+  """The amount of times someone accessed through this link alias."""
   usage: Int
+
+  """The time this link alias was created."""
   createdAt: Datetime
 }
 
 """Represents an update to a `Link`. Fields that are set will be updated."""
 input LinkPatch {
+  """The id for a link alias."""
   id: UUID
+
+  """The alias for an url. It must be unique."""
   alias: String
+
+  """The link alias url."""
   url: String
+
+  """The amount of times someone accessed through this link alias."""
   usage: Int
+
+  """The time this link alias was created."""
   createdAt: Datetime
 }
 
@@ -331,6 +364,8 @@ input UpdateLinkByAliasInput {
   An object where the defined keys will be set on the `Link` being updated.
   """
   patch: LinkPatch!
+
+  """The alias for an url. It must be unique."""
   alias: String!
 }
 
@@ -365,6 +400,8 @@ input UpdateLinkInput {
   An object where the defined keys will be set on the `Link` being updated.
   """
   patch: LinkPatch!
+
+  """The id for a link alias."""
   id: UUID!
 }
 

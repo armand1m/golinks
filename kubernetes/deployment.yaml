@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golinks
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: golinks
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: golinks
+        version: v1
+    spec:
+      volumes:
+      - name: lobster-service-account 
+        secret:
+          secretName: lobster-service-account
+      containers:
+      - name: cloud-sql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.17
+        command:
+          - "/cloud_sql_proxy"
+          - "-instances=prismatic-petal-263719:us-central1:dev-pgsql=tcp:0.0.0.0:5432"
+          - "-credential_file=/secrets/service-account.json"
+        securityContext:
+          runAsNonRoot: true
+        volumeMounts:
+        - name: lobster-service-account
+          mountPath: /secrets/
+          readOnly: true
+      - image: armand1m/golinks:latest
+        imagePullPolicy: IfNotPresent
+        name: golinks 
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: DATABASE_SCHEMA
+          value: public
+        - name: DATABASE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: golinks-database
+              key: connectionstring
+        resources:
+          requests:
+            cpu: 15m
+            memory: 100Mi
