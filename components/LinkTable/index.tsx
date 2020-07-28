@@ -1,27 +1,17 @@
-import {
-  Table,
-  Text,
-  Link as FannyLink,
-  Button,
-} from 'bumbag'
+import { Table, Text, Link as FannyLink, Button } from 'bumbag';
 
-import { GetAllLinksQuery } from '../../lib/queries/getAllLinks.graphql'
+import { GetAllLinksQuery } from '../../lib/queries/getAllLinks.graphql';
 
 interface Props {
-  data: GetAllLinksQuery,
-  onDelete: (linkId: string) => void | Promise<void>,
+  data: GetAllLinksQuery;
+  onDelete: (linkId: string) => void | Promise<void>;
 }
 
-export const LinkTable: React.FC<Props> = ({
-  data,
-  onDelete,
-}) => {
-  const links = data?.links
+export const LinkTable: React.FC<Props> = ({ data, onDelete }) => {
+  const links = data?.links;
 
   if (links?.nodes.length === 0) {
-    return (
-      <Text>There are no links yet. Create one!</Text>
-    );
+    return <Text>There are no links yet. Create one!</Text>;
   }
 
   return (
@@ -36,7 +26,7 @@ export const LinkTable: React.FC<Props> = ({
       </Table.Head>
       <Table.Body>
         <>
-          {links?.nodes.map(link => {
+          {links?.nodes.map((link) => {
             return (
               <Table.Row key={link.id}>
                 <Table.Cell>{link.alias}</Table.Cell>
@@ -44,30 +34,30 @@ export const LinkTable: React.FC<Props> = ({
                   <FannyLink
                     href={link.url}
                     style={{
-                      display: "block",
-                      maxWidth: "350px",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
+                      display: 'block',
+                      maxWidth: '350px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
                     {link.url}
                   </FannyLink>
                 </Table.Cell>
-                <Table.Cell textAlign="right">{link.usage}</Table.Cell>
+                <Table.Cell textAlign="right">
+                  {link.usage}
+                </Table.Cell>
                 <Table.Cell textAlign="right">
                   <Button
                     palette="danger"
-                    onClick={() => onDelete(link.id)}
-                  >
+                    onClick={() => onDelete(link.id)}>
                     Delete
-                  </Button>  
+                  </Button>
                 </Table.Cell>
               </Table.Row>
-            )
+            );
           })}
         </>
       </Table.Body>
     </Table>
-  )
-}
+  );
+};

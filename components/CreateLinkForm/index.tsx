@@ -1,11 +1,6 @@
-import {
-  Link,
-  FieldStack,
-  Button,
-  InputField,
-} from 'bumbag'
+import { Link, FieldStack, Button, InputField } from 'bumbag';
 import * as Yup from 'yup';
-import { Formik, Form, Field, FormikHelpers } from "formik";
+import { Formik, Form, Field, FormikHelpers } from 'formik';
 
 const CreateLinkSchema = Yup.object().shape({
   alias: Yup.string()
@@ -13,22 +8,23 @@ const CreateLinkSchema = Yup.object().shape({
     .max(24, 'Too long for an alias.')
     .required('An alias is required.'),
   url: Yup.string()
-    .url("It must be a valid url.")
+    .url('It must be a valid url.')
     .required('An url is required.'),
 });
 
 interface Link {
   alias: string;
   url: string;
-};
-
-interface Props {
-  onSubmit: (values: Link, helpers: FormikHelpers<Link>) => void | Promise<void>;
 }
 
-export const CreateLinkForm: React.FC<Props> = ({
-  onSubmit
-}) => {
+interface Props {
+  onSubmit: (
+    values: Link,
+    helpers: FormikHelpers<Link>
+  ) => void | Promise<void>;
+}
+
+export const CreateLinkForm: React.FC<Props> = ({ onSubmit }) => {
   return (
     <Formik
       onSubmit={(values, form) => {
@@ -36,10 +32,9 @@ export const CreateLinkForm: React.FC<Props> = ({
       }}
       validationSchema={CreateLinkSchema}
       initialValues={{
-        alias: "",
-        url: "",
-      }}
-    >
+        alias: '',
+        url: '',
+      }}>
       <Form>
         <FieldStack>
           <Field
@@ -61,5 +56,5 @@ export const CreateLinkForm: React.FC<Props> = ({
         </FieldStack>
       </Form>
     </Formik>
-  )
-}
+  );
+};

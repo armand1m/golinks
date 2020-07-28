@@ -7,11 +7,11 @@ import {
   Stack,
   Heading,
   Button,
-} from 'bumbag'
+} from 'bumbag';
 
-import { useGetAllLinksQuery } from '../lib/queries/getAllLinks.graphql'
-import { useCreateLinkMutation } from '../lib/mutations/createLink.graphql'
-import { useDeleteLinkMutation } from '../lib/mutations/deleteLink.graphql'
+import { useGetAllLinksQuery } from '../lib/queries/getAllLinks.graphql';
+import { useCreateLinkMutation } from '../lib/mutations/createLink.graphql';
+import { useDeleteLinkMutation } from '../lib/mutations/deleteLink.graphql';
 import { CreateLinkForm } from '../components/CreateLinkForm';
 import { LinkTable } from '../components/LinkTable';
 
@@ -20,7 +20,6 @@ const Index = () => {
   const [deleteLink] = useDeleteLinkMutation();
   const { data, refetch } = useGetAllLinksQuery();
   const createLinkModal = Modal.useState();
-
 
   return (
     <PageContent>
@@ -35,7 +34,10 @@ const Index = () => {
               <Modal.Disclosure use={Button} {...createLinkModal}>
                 Create
               </Modal.Disclosure>
-              <Dialog.Modal showCloseButton title="Create Go Link" {...createLinkModal}>
+              <Dialog.Modal
+                showCloseButton
+                title="Create Go Link"
+                {...createLinkModal}>
                 <CreateLinkForm
                   onSubmit={async (values, form) => {
                     await createLink({
@@ -58,8 +60,8 @@ const Index = () => {
                 onDelete={async (linkId) => {
                   await deleteLink({
                     variables: {
-                      id: linkId
-                    }
+                      id: linkId,
+                    },
                   });
 
                   await refetch();
@@ -70,7 +72,7 @@ const Index = () => {
         </Card>
       </Stack>
     </PageContent>
-  )
-}
+  );
+};
 
-export default Index
+export default Index;

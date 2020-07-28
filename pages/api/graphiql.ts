@@ -3,6 +3,6 @@ export const config = {
     bodyParser: false,
     externalResolver: true,
   },
-}
+};
 
 export { graphqlInstance as default } from '../../lib/graphql';

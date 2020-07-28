@@ -1,10 +1,10 @@
-import { AppProps } from 'next/app'
+import { AppProps } from 'next/app';
 import { Provider as ThemeProvider } from 'bumbag';
-import { ApolloProvider } from '@apollo/react-hooks'
-import { useApollo } from '../lib/apollo'
+import { ApolloProvider } from '@apollo/react-hooks';
+import { useApollo } from '../lib/apollo';
 
 export default function App({ Component, pageProps }: AppProps) {
-  const apolloClient = useApollo(pageProps.initialApolloState)
+  const apolloClient = useApollo(pageProps.initialApolloState);
 
   return (
     <ApolloProvider client={apolloClient}>
@@ -12,5 +12,5 @@ export default function App({ Component, pageProps }: AppProps) {
         <Component {...pageProps} />
       </ThemeProvider>
     </ApolloProvider>
-  )
+  );
 }

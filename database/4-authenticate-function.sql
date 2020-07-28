@@ -1,7 +1,7 @@
-create function my_public_schema.authenticate(
+create function public.authenticate(
   email text,
   password text
-) returns my_public_schema.jwt_token as $$
+) returns public.jwt_token as $$
 declare
   account my_private_schema.person_account;
 begin
@@ -16,7 +16,7 @@ begin
       account.person_id,
       account.is_admin,
       account.username
-    )::my_public_schema.jwt_token;
+    )::public.jwt_token;
   else
     return null;
   end if;

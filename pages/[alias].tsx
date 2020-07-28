@@ -1,14 +1,9 @@
 import { useEffect, useCallback } from 'react';
 import * as Yup from 'yup';
 import { useRouter } from 'next/router';
-import {
-  PageContent,
-  Heading,
-  Text,
-  Callout,
-} from 'bumbag'
+import { PageContent, Heading, Text, Callout } from 'bumbag';
 
-import { useGetLinkByAliasQuery } from '../lib/queries/getLinkByAlias.graphql'
+import { useGetLinkByAliasQuery } from '../lib/queries/getLinkByAlias.graphql';
 import { useUpdateLinkUsageMutation } from '../lib/mutations/updateLinkUsage.graphql';
 
 const RouterQuerySchema = Yup.object().shape({
@@ -27,7 +22,7 @@ const Redirect: React.FC<RedirectProps> = ({ alias }) => {
   const { data, loading } = useGetLinkByAliasQuery({
     variables: {
       alias,
-    }
+    },
   });
 
   const updateAndRedirect = useCallback(async () => {
@@ -35,8 +30,8 @@ const Redirect: React.FC<RedirectProps> = ({ alias }) => {
       await updateLinkUsage({
         variables: {
           alias: data.linkByAlias.alias,
-          usage: data.linkByAlias.usage + 1
-        }
+          usage: data.linkByAlias.usage + 1,
+        },
       });
 
       window.location.replace(data.linkByAlias.url);
@@ -46,13 +41,11 @@ const Redirect: React.FC<RedirectProps> = ({ alias }) => {
   useEffect(() => {
     updateAndRedirect();
   }, [data]);
-  
+
   return (
     <PageContent>
       <Callout>
-        {loading === true && (
-          <Heading>Loading..</Heading>
-        )}
+        {loading === true && <Heading>Loading..</Heading>}
 
         {loading === false && data?.linkByAlias === null && (
           <>
@@ -70,7 +63,7 @@ const Redirect: React.FC<RedirectProps> = ({ alias }) => {
       </Callout>
     </PageContent>
   );
-}
+};
 
 const Alias = () => {
   const router = useRouter();
@@ -83,12 +76,10 @@ const Alias = () => {
           <Text>Just don't.</Text>
         </Callout>
       </PageContent>
-    )
+    );
   }
 
-  return (
-    <Redirect alias={String(router.query.alias)} />
-  )
-}
+  return <Redirect alias={String(router.query.alias)} />;
+};
 
-export default Alias
+export default Alias;

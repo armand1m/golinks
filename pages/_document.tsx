@@ -1,14 +1,12 @@
 import React from 'react';
 import Document, { Head, Main, NextScript } from 'next/document';
-import { extractCritical } from 'bumbag-server'
-import { InitializeColorMode } from 'bumbag'
+import { extractCritical } from 'bumbag-server';
+import { InitializeColorMode } from 'bumbag';
 
 export default class MyDocument extends Document {
   static async getInitialProps(ctx: any) {
-    const initialProps = await Document.getInitialProps(ctx)
-    const styles = extractCritical(initialProps.html)
-
-    console.log(styles);
+    const initialProps = await Document.getInitialProps(ctx);
+    const styles = extractCritical(initialProps.html);
 
     return {
       ...initialProps,
@@ -21,7 +19,7 @@ export default class MyDocument extends Document {
           />
         </>
       ),
-    }
+    };
   }
   render() {
     return (
