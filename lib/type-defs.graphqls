@@ -104,6 +104,11 @@ type DeleteLinkPayload {
   ): LinksEdge
 }
 
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
 """A link alias posted by an user."""
 type Link implements Node {
   """
@@ -344,6 +349,8 @@ type Query implements Node {
   ): LinksConnection
   link(id: UUID!): Link
   linkByAlias(alias: String!): Link
+  getCurrentPermissions: JSON
+  hasPermission(permission: String): Boolean
 
   """Reads a single `Link` using its globally unique `ID`."""
   linkByNodeId(

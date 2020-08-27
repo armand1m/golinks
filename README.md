@@ -24,11 +24,11 @@ This is my personal version of Go Links built with [Next.js](https://nextjs.org/
 - [ ] Edit Links
 - [x] Redirect Links
 - [x] Link Usage Count
-- [ ] Auth
-- [ ] Security
+- [x] Auth
+- [x] Security
 - [ ] Link Description
 - [ ] Link Suggestion on 404
-- [ ] Link Usage Metrics
+- [ ] Link Usage Time Series Metrics
 - [ ] Link Ownership
 
 ## Deploying
@@ -91,7 +91,7 @@ GraphQL Type definitions are generated on application startup during development
 Start the database:
 
 ```sh
-docker-compose up db -d
+docker-compose up -d db
 ```
 
 Prepare the project and run in development mode:

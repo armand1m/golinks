@@ -9,10 +9,8 @@ services:
       - 3000:3000/tcp
     networks:
       - overlay
-    environment:
-      DATABASE_CONNECTION_STRING: postgres://dev:dev@db:5432/golinks
-      DATABASE_SCHEMA: public
-      NODE_ENV: production
+    env_file:
+      - .env.local
     depends_on:
       - db
 
@@ -27,9 +25,9 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./database/1-links-table.sql:/docker-entrypoint-initdb.d/1-links-table.sql
-      - ./database/2-jwt-token-type.sql:/docker-entrypoint-initdb.d/2-jwt-token-type.sql
-      - ./database/3-users-table.sql:/docker-entrypoint-initdb.d/3-users-table.sql
-      - ./database/4-authenticate-function.sql:/docker-entrypoint-initdb.d/4-authenticate-function.sql
+      - ./database/2-roles.sql:/docker-entrypoint-initdb.d/2-roles.sql
+      - ./database/3-auth-functions.sql:/docker-entrypoint-initdb.d/3-auth-functions.sql
+      - ./database/4-policies.sql:/docker-entrypoint-initdb.d/4-policies.sql
     ports:
       - 5432:5432/tcp
  
