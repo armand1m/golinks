@@ -33,3 +33,22 @@ ALTER TABLE public.links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.links FORCE ROW LEVEL SECURITY;
 
 GRANT ALL ON public.links TO postgraphile;
+
+CREATE POLICY read_link_metric
+  ON public.link_usage_metrics
+  FOR SELECT
+  USING (
+    has_permission('read:golinks')
+  );
+
+CREATE POLICY create_link_metric
+  ON public.link_usage_metrics
+  FOR INSERT
+  WITH CHECK (
+    has_permission('read:golinks')
+  );
+
+ALTER TABLE public.link_usage_metrics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.link_usage_metrics FORCE ROW LEVEL SECURITY;
+
+GRANT ALL ON public.link_usage_metrics TO postgraphile;

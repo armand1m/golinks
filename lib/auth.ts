@@ -5,6 +5,7 @@ import { initAuth0 } from '@auth0/nextjs-auth0';
 import { ISession } from '@auth0/nextjs-auth0/dist/session/session';
 
 const ANONYMOUS_PERMISSIONS = ['read:golinks'];
+const ANONYMOUS_ROLES = ['viewer'];
 
 const DOMAIN = String(process.env.AUTH0_DOMAIN);
 const AUDIENCE = String(process.env.AUTH0_AUDIENCE);
@@ -14,7 +15,7 @@ const COOKIE_DOMAIN = String(process.env.AUTH0_COOKIE_DOMAIN);
 const COOKIE_SECRET = String(process.env.AUTH0_COOKIE_SECRET);
 const REDIRECT_URL = String(process.env.AUTH0_REDIRECT_URL);
 const POST_LOGOUT_REDIRECT_URL = String(
-  process.env.POST_LOGOUT_REDIRECT_URL
+  process.env.AUTH0_POST_LOGOUT_REDIRECT_URL
 );
 
 const jwksSecretClient = jwksRsa({
@@ -41,6 +42,13 @@ interface DecodedJwtToken {
   azp: string;
   scope: string;
   permissions: string[];
+  /**
+   * This is set by a Custom Auth0 Rule
+   *
+   * For some reason, the key needs to be a URI
+   * otherwise Auth0 filters it out :shrug:
+   **/
+  'https://user/roles': string[];
 }
 
 export const getPermissionsFromSession = async (
@@ -49,6 +57,7 @@ export const getPermissionsFromSession = async (
   if (!session || !session.accessToken) {
     return {
       permissions: ANONYMOUS_PERMISSIONS,
+      roles: ANONYMOUS_ROLES,
     };
   }
 
@@ -85,6 +94,7 @@ export const getPermissionsFromSession = async (
 
   return {
     permissions: jwtToken.permissions || ANONYMOUS_PERMISSIONS,
+    roles: jwtToken['https://user/roles'] || ANONYMOUS_ROLES,
   };
 };
 

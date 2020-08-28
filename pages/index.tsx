@@ -17,14 +17,14 @@ import {
 
 import {
   auth0,
-  getPermissionsFromSession,
   IClaims,
+  getPermissionsFromSession,
 } from '../lib/auth';
+import { LinkTable } from '../components/LinkTable';
+import { CreateLinkForm } from '../components/CreateLinkForm';
 import { useGetAllLinksQuery } from '../lib/queries/getAllLinks.graphql';
 import { useCreateLinkMutation } from '../lib/mutations/createLink.graphql';
 import { useDeleteLinkMutation } from '../lib/mutations/deleteLink.graphql';
-import { CreateLinkForm } from '../components/CreateLinkForm';
-import { LinkTable } from '../components/LinkTable';
 
 interface Props {
   user: IClaims;
@@ -130,13 +130,13 @@ export const getServerSideProps: GetServerSideProps = async (
     };
   }
 
-  const res = context?.res as NextApiResponse;
+  const response = context?.res as NextApiResponse;
 
-  res.writeHead(302, {
+  response.writeHead(302, {
     Location: '/api/login',
   });
 
-  res.end();
+  response.end();
 
   return {
     props: {},

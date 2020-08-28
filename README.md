@@ -2,7 +2,7 @@
 
 This application is deployed at https://go.armand1m.dev
 
-This is my personal version of Go Links built with [Next.js](https://nextjs.org/) and [GraphQL](http://graphql.org/).
+This is my personal version of Go Links powered by [Next.js](https://nextjs.org/) , [GraphQL](http://graphql.org/) (through PostGraphile) and Auth0.
 
 <div style="max-width: 700px">
   <img src="./.github/redirect.gif?raw=true">
@@ -23,12 +23,13 @@ This is my personal version of Go Links built with [Next.js](https://nextjs.org/
 - [x] Delete Links
 - [ ] Edit Links
 - [x] Redirect Links
-- [x] Link Usage Count
 - [x] Auth
+  - [x] Powered by Auth0
 - [x] Security
+  - [x] Row Level Security using Auth0 Roles and Permissions
 - [ ] Link Description
 - [ ] Link Suggestion on 404
-- [ ] Link Usage Time Series Metrics
+- [x] Link Usage Metrics
 - [ ] Link Ownership
 
 ## Deploying
@@ -78,7 +79,7 @@ kubectl apply -f ./kubernetes/istio/destination-rule.yaml
 
 armand1m/golinks is a Next.js app using GraphQL.
 
-The database must be a [PostgreSQL 12.x](http://postgresql.org/) database as the GraphQL API is generated using [Postgraphile](https://www.graphile.org/postgraphile/). 
+The database must be a [Postgres 12.x](http://postgresql.org/) database as the GraphQL API is generated using [Postgraphile](https://www.graphile.org/postgraphile/) and leverages features like Row Level Security only available from Postgres 9.6+.
 
 PostGraphile is then used as a NPM module and served through Next.js routes itself, so you don't have to worry about CORS, and the api is initialized together with the Next.js application.
 

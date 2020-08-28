@@ -19,6 +19,7 @@ const commonProperties: Partial<PostGraphileOptions> = {
     const claims = await getPermissionsFromSession(session);
 
     settings['role'] = 'postgraphile';
+    settings['jwt.claims.roles'] = JSON.stringify(claims.roles);
     settings['jwt.claims.permissions'] = JSON.stringify(
       claims.permissions
     );

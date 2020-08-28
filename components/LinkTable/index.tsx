@@ -55,7 +55,7 @@ export const LinkTable: React.FC<Props> = ({
                   </FannyLink>
                 </Table.Cell>
                 <Table.Cell textAlign="right">
-                  {link.usage}
+                  {link.linkUsageMetrics.totalCount}
                 </Table.Cell>
                 {isDeleteEnabled && (
                   <Table.Cell textAlign="right">

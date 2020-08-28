@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { PageContent, Heading, Text, Callout } from 'bumbag';
 
 import { useGetLinkByAliasQuery } from '../lib/queries/getLinkByAlias.graphql';
-import { useUpdateLinkUsageMutation } from '../lib/mutations/updateLinkUsage.graphql';
+import { useCreateLinkUsageMetricMutation } from '../lib/mutations/createLinkUsageMetric.graphql';
 
 const RouterQuerySchema = Yup.object().shape({
   alias: Yup.string()
@@ -18,7 +18,7 @@ interface RedirectProps {
 }
 
 const Redirect: React.FC<RedirectProps> = ({ alias }) => {
-  const [updateLinkUsage] = useUpdateLinkUsageMutation();
+  const [createLinkMetric] = useCreateLinkUsageMetricMutation();
   const { data, loading } = useGetLinkByAliasQuery({
     variables: {
       alias,
@@ -27,10 +27,9 @@ const Redirect: React.FC<RedirectProps> = ({ alias }) => {
 
   const updateAndRedirect = useCallback(async () => {
     if (data?.linkByAlias) {
-      await updateLinkUsage({
+      await createLinkMetric({
         variables: {
-          alias: data.linkByAlias.alias,
-          usage: data.linkByAlias.usage + 1,
+          linkId: data.linkByAlias.id,
         },
       });
 
