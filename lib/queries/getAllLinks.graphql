@@ -4,7 +4,9 @@ query getAllLinks {
       id
       url
       alias
-      usage
+      linkUsageMetrics {
+        totalCount
+      }
     }
   }
 }

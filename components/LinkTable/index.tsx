@@ -1,17 +1,26 @@
-import { Table, Text, Link as FannyLink, Button } from 'bumbag';
+import { Box, Table, Text, Link as FannyLink, Button } from 'bumbag';
 
 import { GetAllLinksQuery } from '../../lib/queries/getAllLinks.graphql';
 
 interface Props {
   data: GetAllLinksQuery;
+  isDeleteEnabled: boolean;
   onDelete: (linkId: string) => void | Promise<void>;
 }
 
-export const LinkTable: React.FC<Props> = ({ data, onDelete }) => {
+export const LinkTable: React.FC<Props> = ({
+  data,
+  isDeleteEnabled,
+  onDelete,
+}) => {
   const links = data?.links;
 
   if (links?.nodes.length === 0) {
-    return <Text>There are no links yet. Create one!</Text>;
+    return (
+      <Box>
+        <Text>There are no golinks available.</Text>
+      </Box>
+    );
   }
 
   return (
@@ -21,7 +30,9 @@ export const LinkTable: React.FC<Props> = ({ data, onDelete }) => {
           <Table.HeadCell>Alias</Table.HeadCell>
           <Table.HeadCell>Destination</Table.HeadCell>
           <Table.HeadCell textAlign="right">Usage</Table.HeadCell>
-          <Table.HeadCell textAlign="right">Actions</Table.HeadCell>
+          {isDeleteEnabled && (
+            <Table.HeadCell textAlign="right">Actions</Table.HeadCell>
+          )}
         </Table.Row>
       </Table.Head>
       <Table.Body>
@@ -44,15 +55,17 @@ export const LinkTable: React.FC<Props> = ({ data, onDelete }) => {
                   </FannyLink>
                 </Table.Cell>
                 <Table.Cell textAlign="right">
-                  {link.usage}
+                  {link.linkUsageMetrics.totalCount}
                 </Table.Cell>
-                <Table.Cell textAlign="right">
-                  <Button
-                    palette="danger"
-                    onClick={() => onDelete(link.id)}>
-                    Delete
-                  </Button>
-                </Table.Cell>
+                {isDeleteEnabled && (
+                  <Table.Cell textAlign="right">
+                    <Button
+                      palette="danger"
+                      onClick={() => onDelete(link.id)}>
+                      Delete
+                    </Button>
+                  </Table.Cell>
+                )}
               </Table.Row>
             );
           })}

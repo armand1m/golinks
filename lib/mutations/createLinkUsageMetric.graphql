@@ -1,0 +1,7 @@
+mutation CreateLinkUsageMetric($linkId: UUID!) {
+  createLinkUsageMetric(input: {linkUsageMetric: {linkId: $linkId}}) {
+  	linkUsageMetric {
+      id
+    }
+  }
+}

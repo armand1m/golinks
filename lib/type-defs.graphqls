@@ -33,6 +33,44 @@ type CreateLinkPayload {
   ): LinksEdge
 }
 
+"""All input for the create `LinkUsageMetric` mutation."""
+input CreateLinkUsageMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `LinkUsageMetric` to be created by this mutation."""
+  linkUsageMetric: LinkUsageMetricInput!
+}
+
+"""The output of our create `LinkUsageMetric` mutation."""
+type CreateLinkUsageMetricPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `LinkUsageMetric` that was created by this mutation."""
+  linkUsageMetric: LinkUsageMetric
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Link` that is related to this `LinkUsageMetric`."""
+  link: Link
+
+  """An edge for our `LinkUsageMetric`. May be used by Relay 1."""
+  linkUsageMetricEdge(
+    """The method to use when ordering `LinkUsageMetric`."""
+    orderBy: [LinkUsageMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): LinkUsageMetricsEdge
+}
+
 """A location in a connection that can be used for resuming pagination."""
 scalar Cursor
 
@@ -104,6 +142,64 @@ type DeleteLinkPayload {
   ): LinksEdge
 }
 
+"""All input for the `deleteLinkUsageMetricByNodeId` mutation."""
+input DeleteLinkUsageMetricByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `LinkUsageMetric` to be deleted.
+  """
+  nodeId: ID!
+}
+
+"""All input for the `deleteLinkUsageMetric` mutation."""
+input DeleteLinkUsageMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The id for this metric record."""
+  id: UUID!
+}
+
+"""The output of our delete `LinkUsageMetric` mutation."""
+type DeleteLinkUsageMetricPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `LinkUsageMetric` that was deleted by this mutation."""
+  linkUsageMetric: LinkUsageMetric
+  deletedLinkUsageMetricNodeId: ID
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Link` that is related to this `LinkUsageMetric`."""
+  link: Link
+
+  """An edge for our `LinkUsageMetric`. May be used by Relay 1."""
+  linkUsageMetricEdge(
+    """The method to use when ordering `LinkUsageMetric`."""
+    orderBy: [LinkUsageMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): LinkUsageMetricsEdge
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
 """A link alias posted by an user."""
 type Link implements Node {
   """
@@ -120,11 +216,37 @@ type Link implements Node {
   """The link alias url."""
   url: String!
 
-  """The amount of times someone accessed through this link alias."""
-  usage: Int!
-
   """The time this link alias was created."""
   createdAt: Datetime!
+
+  """Reads and enables pagination through a set of `LinkUsageMetric`."""
+  linkUsageMetrics(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `LinkUsageMetric`."""
+    orderBy: [LinkUsageMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: LinkUsageMetricCondition
+  ): LinkUsageMetricsConnection!
 }
 
 """
@@ -149,9 +271,6 @@ input LinkInput {
   """The link alias url."""
   url: String!
 
-  """The amount of times someone accessed through this link alias."""
-  usage: Int
-
   """The time this link alias was created."""
   createdAt: Datetime
 }
@@ -166,9 +285,6 @@ input LinkPatch {
 
   """The link alias url."""
   url: String
-
-  """The amount of times someone accessed through this link alias."""
-  usage: Int
 
   """The time this link alias was created."""
   createdAt: Datetime
@@ -211,10 +327,115 @@ enum LinksOrderBy {
   PRIMARY_KEY_DESC
 }
 
+"""A link usage metric posted by the application when a link is accessed."""
+type LinkUsageMetric implements Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+
+  """The id for this metric record."""
+  id: UUID!
+
+  """The id of the link being accessed."""
+  linkId: UUID!
+
+  """The time this link was accessed."""
+  accessedAt: Datetime!
+
+  """Reads a single `Link` that is related to this `LinkUsageMetric`."""
+  link: Link
+}
+
+"""
+A condition to be used against `LinkUsageMetric` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input LinkUsageMetricCondition {
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `linkId` field."""
+  linkId: UUID
+}
+
+"""An input for mutations affecting `LinkUsageMetric`"""
+input LinkUsageMetricInput {
+  """The id for this metric record."""
+  id: UUID
+
+  """The id of the link being accessed."""
+  linkId: UUID!
+
+  """The time this link was accessed."""
+  accessedAt: Datetime
+}
+
+"""
+Represents an update to a `LinkUsageMetric`. Fields that are set will be updated.
+"""
+input LinkUsageMetricPatch {
+  """The id for this metric record."""
+  id: UUID
+
+  """The id of the link being accessed."""
+  linkId: UUID
+
+  """The time this link was accessed."""
+  accessedAt: Datetime
+}
+
+"""A connection to a list of `LinkUsageMetric` values."""
+type LinkUsageMetricsConnection {
+  """A list of `LinkUsageMetric` objects."""
+  nodes: [LinkUsageMetric!]!
+
+  """
+  A list of edges which contains the `LinkUsageMetric` and cursor to aid in pagination.
+  """
+  edges: [LinkUsageMetricsEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """
+  The count of *all* `LinkUsageMetric` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `LinkUsageMetric` edge in the connection."""
+type LinkUsageMetricsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `LinkUsageMetric` at the end of the edge."""
+  node: LinkUsageMetric!
+}
+
+"""Methods to use when ordering `LinkUsageMetric`."""
+enum LinkUsageMetricsOrderBy {
+  NATURAL
+  ID_ASC
+  ID_DESC
+  LINK_ID_ASC
+  LINK_ID_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
 """
 The root mutation type which contains root level fields which mutate data.
 """
 type Mutation {
+  """Creates a single `LinkUsageMetric`."""
+  createLinkUsageMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateLinkUsageMetricInput!
+  ): CreateLinkUsageMetricPayload
+
   """Creates a single `Link`."""
   createLink(
     """
@@ -222,6 +443,24 @@ type Mutation {
     """
     input: CreateLinkInput!
   ): CreateLinkPayload
+
+  """
+  Updates a single `LinkUsageMetric` using its globally unique id and a patch.
+  """
+  updateLinkUsageMetricByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateLinkUsageMetricByNodeIdInput!
+  ): UpdateLinkUsageMetricPayload
+
+  """Updates a single `LinkUsageMetric` using a unique key and a patch."""
+  updateLinkUsageMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateLinkUsageMetricInput!
+  ): UpdateLinkUsageMetricPayload
 
   """Updates a single `Link` using its globally unique id and a patch."""
   updateLinkByNodeId(
@@ -246,6 +485,22 @@ type Mutation {
     """
     input: UpdateLinkByAliasInput!
   ): UpdateLinkPayload
+
+  """Deletes a single `LinkUsageMetric` using its globally unique id."""
+  deleteLinkUsageMetricByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteLinkUsageMetricByNodeIdInput!
+  ): DeleteLinkUsageMetricPayload
+
+  """Deletes a single `LinkUsageMetric` using a unique key."""
+  deleteLinkUsageMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteLinkUsageMetricInput!
+  ): DeleteLinkUsageMetricPayload
 
   """Deletes a single `Link` using its globally unique id."""
   deleteLinkByNodeId(
@@ -314,6 +569,35 @@ type Query implements Node {
     nodeId: ID!
   ): Node
 
+  """Reads and enables pagination through a set of `LinkUsageMetric`."""
+  linkUsageMetrics(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `LinkUsageMetric`."""
+    orderBy: [LinkUsageMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: LinkUsageMetricCondition
+  ): LinkUsageMetricsConnection
+
   """Reads and enables pagination through a set of `Link`."""
   links(
     """Only read the first `n` values of the set."""
@@ -342,8 +626,19 @@ type Query implements Node {
     """
     condition: LinkCondition
   ): LinksConnection
+  linkUsageMetric(id: UUID!): LinkUsageMetric
   link(id: UUID!): Link
   linkByAlias(alias: String!): Link
+  getCurrentPermissions: JSON
+  hasPermission(permission: String): Boolean
+
+  """Reads a single `LinkUsageMetric` using its globally unique `ID`."""
+  linkUsageMetricByNodeId(
+    """
+    The globally unique `ID` to be used in selecting a single `LinkUsageMetric`.
+    """
+    nodeId: ID!
+  ): LinkUsageMetric
 
   """Reads a single `Link` using its globally unique `ID`."""
   linkByNodeId(
@@ -426,6 +721,68 @@ type UpdateLinkPayload {
     """The method to use when ordering `Link`."""
     orderBy: [LinksOrderBy!] = [PRIMARY_KEY_ASC]
   ): LinksEdge
+}
+
+"""All input for the `updateLinkUsageMetricByNodeId` mutation."""
+input UpdateLinkUsageMetricByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `LinkUsageMetric` to be updated.
+  """
+  nodeId: ID!
+
+  """
+  An object where the defined keys will be set on the `LinkUsageMetric` being updated.
+  """
+  patch: LinkUsageMetricPatch!
+}
+
+"""All input for the `updateLinkUsageMetric` mutation."""
+input UpdateLinkUsageMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `LinkUsageMetric` being updated.
+  """
+  patch: LinkUsageMetricPatch!
+
+  """The id for this metric record."""
+  id: UUID!
+}
+
+"""The output of our update `LinkUsageMetric` mutation."""
+type UpdateLinkUsageMetricPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `LinkUsageMetric` that was updated by this mutation."""
+  linkUsageMetric: LinkUsageMetric
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Link` that is related to this `LinkUsageMetric`."""
+  link: Link
+
+  """An edge for our `LinkUsageMetric`. May be used by Relay 1."""
+  linkUsageMetricEdge(
+    """The method to use when ordering `LinkUsageMetric`."""
+    orderBy: [LinkUsageMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): LinkUsageMetricsEdge
 }
 
 """

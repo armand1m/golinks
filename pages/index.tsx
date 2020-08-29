@@ -1,62 +1,94 @@
 import {
+  GetServerSideProps,
+  NextApiRequest,
+  NextApiResponse,
+} from 'next';
+import {
   Modal,
   Dialog,
-  Box,
+  Flex,
   PageContent,
   Card,
   Stack,
   Heading,
   Button,
+  Spinner,
 } from 'bumbag';
 
+import { IClaims } from '../lib/auth';
+import { LinkTable } from '../components/LinkTable';
+import { CreateLinkForm } from '../components/CreateLinkForm';
 import { useGetAllLinksQuery } from '../lib/queries/getAllLinks.graphql';
 import { useCreateLinkMutation } from '../lib/mutations/createLink.graphql';
 import { useDeleteLinkMutation } from '../lib/mutations/deleteLink.graphql';
-import { CreateLinkForm } from '../components/CreateLinkForm';
-import { LinkTable } from '../components/LinkTable';
 
-const Index = () => {
+interface Props {
+  user: IClaims;
+  grants: {
+    permissions: string[];
+  };
+}
+
+const Index: React.FC<Props> = ({ grants }) => {
   const [createLink] = useCreateLinkMutation();
   const [deleteLink] = useDeleteLinkMutation();
-  const { data, refetch } = useGetAllLinksQuery();
+  const { loading, data, refetch } = useGetAllLinksQuery();
   const createLinkModal = Modal.useState();
+
+  const canCreate = grants.permissions.includes('create:golinks');
+  const canDelete = grants.permissions.includes('delete:golinks');
 
   return (
     <PageContent>
       <Stack spacing="major-2">
-        <Box>
+        <Flex alignItems="center" justifyContent="space-between">
           <Heading>go.armand1m.dev</Heading>
-        </Box>
+          <Flex alignItems="center">
+            <Button
+              onClick={() => window.location.replace('/api/logout')}>
+              Logout
+            </Button>
+          </Flex>
+        </Flex>
 
         <Card>
           <Stack>
-            <>
-              <Modal.Disclosure use={Button} {...createLinkModal}>
-                Create
-              </Modal.Disclosure>
-              <Dialog.Modal
-                showCloseButton
-                title="Create Go Link"
-                {...createLinkModal}>
-                <CreateLinkForm
-                  onSubmit={async (values, form) => {
-                    await createLink({
-                      variables: values,
-                    });
+            {canCreate && (
+              <>
+                <Modal.Disclosure use={Button} {...createLinkModal}>
+                  Create
+                </Modal.Disclosure>
+                <Dialog.Modal
+                  showCloseButton
+                  title="Create Go Link"
+                  {...createLinkModal}>
+                  <CreateLinkForm
+                    onSubmit={async (values, form) => {
+                      await createLink({
+                        variables: values,
+                      });
 
-                    await refetch();
+                      await refetch();
 
-                    createLinkModal.hide();
+                      createLinkModal.hide();
 
-                    form.resetForm();
-                  }}
-                />
-              </Dialog.Modal>
-            </>
+                      form.resetForm();
+                    }}
+                  />
+                </Dialog.Modal>
+              </>
+            )}
+
+            {loading && (
+              <Flex alignX="center">
+                <Spinner size="medium" />
+              </Flex>
+            )}
 
             {data !== undefined && data !== null && (
               <LinkTable
                 data={data}
+                isDeleteEnabled={canDelete}
                 onDelete={async (linkId) => {
                   await deleteLink({
                     variables: {
@@ -76,3 +108,34 @@ const Index = () => {
 };
 
 export default Index;
+
+export const getServerSideProps: GetServerSideProps = async (
+  context
+) => {
+  const { auth0, getPermissionsFromSession } = require('../lib/auth');
+  const request = context?.req as NextApiRequest;
+  const session = await auth0.getSession(request);
+  const grants = await getPermissionsFromSession(session);
+  const user = session?.user;
+
+  if (user) {
+    return {
+      props: {
+        user,
+        grants,
+      },
+    };
+  }
+
+  const response = context?.res as NextApiResponse;
+
+  response.writeHead(302, {
+    Location: '/api/login',
+  });
+
+  response.end();
+
+  return {
+    props: {},
+  };
+};

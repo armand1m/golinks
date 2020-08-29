@@ -4,7 +4,6 @@ mutation CreateLink($alias: String!, $url: String!) {
       id,
       url,
       alias,
-      usage,
       createdAt,
     }
   }
