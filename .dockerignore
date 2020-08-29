@@ -9,3 +9,4 @@ Dockerfile
 cloudbuild.yaml
 cloudbuild-pr.yaml
 ./kubernetes
+.env*

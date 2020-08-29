@@ -15,11 +15,7 @@ import {
   Spinner,
 } from 'bumbag';
 
-import {
-  auth0,
-  IClaims,
-  getPermissionsFromSession,
-} from '../lib/auth';
+import { IClaims } from '../lib/auth';
 import { LinkTable } from '../components/LinkTable';
 import { CreateLinkForm } from '../components/CreateLinkForm';
 import { useGetAllLinksQuery } from '../lib/queries/getAllLinks.graphql';
@@ -116,6 +112,7 @@ export default Index;
 export const getServerSideProps: GetServerSideProps = async (
   context
 ) => {
+  const { auth0, getPermissionsFromSession } = require('../lib/auth');
   const request = context?.req as NextApiRequest;
   const session = await auth0.getSession(request);
   const grants = await getPermissionsFromSession(session);
