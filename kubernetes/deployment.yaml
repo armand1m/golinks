@@ -37,6 +37,31 @@ spec:
         ports:
         - containerPort: 3000
         env:
+        - name: AUTH0_DOMAIN
+          value: ${AUTH0_DOMAIN}
+        - name: AUTH0_AUDIENCE
+          value: ${AUTH0_AUDIENCE}
+        - name: AUTH0_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: auth0-properties
+              key: client_id
+        - name: AUTH0_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth0-properties
+              key: client_secret
+        - name: AUTH0_COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth0-properties
+              key: cookie_secret
+        - name: AUTH0_COOKIE_DOMAIN
+          value: ${AUTH0_COOKIE_DOMAIN}
+        - name: AUTH0_REDIRECT_URL
+          value: ${AUTH0_REDIRECT_URL}
+        - name: AUTH0_POST_LOGOUT_REDIRECT_URL
+          value: ${AUTH0_POST_LOGOUT_REDIRECT_URL}
         - name: NODE_ENV
           value: production
         - name: DATABASE_SCHEMA

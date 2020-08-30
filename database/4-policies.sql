@@ -52,3 +52,5 @@ ALTER TABLE public.link_usage_metrics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.link_usage_metrics FORCE ROW LEVEL SECURITY;
 
 GRANT ALL ON public.link_usage_metrics TO postgraphile;
+
+GRANT ALL on schema public TO postgraphile;

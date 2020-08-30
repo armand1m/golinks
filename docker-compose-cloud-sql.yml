@@ -9,10 +9,8 @@ services:
       - 3000:3000/tcp
     networks:
       - overlay
-    environment:
-      DATABASE_CONNECTION_STRING: postgres://${DATABASE_USER}:${DATABASE_PASS}@db:5432/${DATABASE_NAME}
-      DATABASE_SCHEMA: ${DATABASE_SCHEMA}
-      NODE_ENV: production
+    env_file:
+      - .env.cloud
     depends_on:
       - db
 

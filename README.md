@@ -2,7 +2,11 @@
 
 This application is deployed at https://go.armand1m.dev
 
-This is my personal version of Go Links powered by [Next.js](https://nextjs.org/) , [GraphQL](http://graphql.org/) (through PostGraphile) and Auth0.
+This is an implementation of Go Links powered by [Next.js](https://nextjs.org/), [GraphQL](http://graphql.org/) through [PostGraphile](https://www.graphile.org/postgraphile/) and [Auth0](https://www.auth0.com).
+
+In short, Go Links are a type of URL Shorteners. You can create an alias that points to an URL and will redirect to user to that URL.
+
+Please check the [Related](#related) section to have a glance on how other companies and universities leverage go links.
 
 <div style="max-width: 700px">
   <img src="./.github/redirect.gif?raw=true">
@@ -19,6 +23,9 @@ This is my personal version of Go Links powered by [Next.js](https://nextjs.org/
 
 ## Feature Checklist
 
+These are only just a few of the ideas that come in my mind.
+Please feel free to suggest more features by creating an Issue. I'd love to hear your thoughts.
+
 - [x] Create Links
 - [x] Delete Links
 - [ ] Edit Links
@@ -30,7 +37,10 @@ This is my personal version of Go Links powered by [Next.js](https://nextjs.org/
 - [ ] Link Description
 - [ ] Link Suggestion on 404
 - [x] Link Usage Metrics
+  - [x] Number: Usage Total Count
+  - [ ] Graph: Usage over Time 
 - [ ] Link Ownership
+- [ ] Link Parameters
 
 ## Deploying
 
@@ -57,6 +67,15 @@ kubectl create secret generic cloudsql-service-account \
   --from-file=service-account.json=./service-account.json
 ```
 
+Create a secret to keep Auth0 ids and secrets:
+
+```sh
+kubectl create secret generic auth0-properties \
+  --from-literal=client_id='auth0-app-client-id' \
+  --from-literal=client_secret='auth0-app-client-secret' \
+  --from-literal=cookie_secret='random-cookie-secret'
+```
+
 Create a deployment and service:
 
 ```sh
@@ -77,17 +96,20 @@ kubectl apply -f ./kubernetes/istio/destination-rule.yaml
 
 ## Developing
 
-armand1m/golinks is a Next.js app using GraphQL.
+`armand1m/golinks` is a Next.js app using GraphQL.
 
 The database must be a [Postgres 12.x](http://postgresql.org/) database as the GraphQL API is generated using [Postgraphile](https://www.graphile.org/postgraphile/) and leverages features like Row Level Security only available from Postgres 9.6+.
 
-PostGraphile is then used as a NPM module and served through Next.js routes itself, so you don't have to worry about CORS, and the api is initialized together with the Next.js application.
+PostGraphile is then used as a NPM module and served through Next.js routes itself, so you don't have to worry about CORS, and the API is initialized together with the Next.js application.
 
-GraphQL Type definitions are generated on application startup during development, so make sure your database executed the initialization scripts during startup as PostGraphile will infer them to the generate the `type-defs.graphqls` file. 
+GraphQL Type definitions are generated on application startup during development, so make sure your database executed the initialization scripts during startup as PostGraphile will infer them to the generate the `type-defs.graphqls` file. (This brings some caveats when making breaking changes in the database schema during development time, but easy to overcome.)
 
 `graphql-let` then is used to generate type definitions in Typescript for development use.
 
 ### Local Database with watch mode:
+
+For development, we use the official `postgres` docker image. This image comes with a feature that initializes the database when provided a folder with scripts.
+When started without a volume setup, the image will execute all the `.sql` scripts in the `./database` folder.
 
 Start the database:
 
@@ -102,12 +124,25 @@ yarn
 yarn dev
 ```
 
-Access http://localhost:3000 and you should have a live
-development environment running.
+Access http://localhost:3000 and you should have a live development environment running.
 
 ### Locally, with docker and local db:
 
 ```sh
+cat > ./.env.local <<EOL
+DATABASE_CONNECTION_STRING=postgres://dev:dev@db:5432/golinks
+DATABASE_SCHEMA=public
+NODE_ENV=production
+AUTH0_DOMAIN=<auth0-domain>
+AUTH0_AUDIENCE=<auth0-audience>
+AUTH0_CLIENT_ID=<auth0-client-id>
+AUTH0_CLIENT_SECRET=<auth0-client-secret>
+AUTH0_COOKIE_SECRET=<auth0-cookie-secret>
+AUTH0_COOKIE_DOMAIN=localhost
+AUTH0_REDIRECT_URL=http://localhost:3000/api/callback
+AUTH0_POST_LOGOUT_REDIRECT_URL=http://localhost:3000
+EOL
+
 docker-compose up
 ```
 
@@ -115,19 +150,25 @@ Access http://localhost:3000
 
 ### Locally, with docker and cloud sql db:
 
-Create a file `run-cloud.sh` with the following template, modify and use it.
-
-Don't forget to `chmod +x run-cloud.sh`.
-
 ```sh
-#!/bin/bash
+# Environment Variables for the Application
+cat > ./.env.cloud <<EOL
+DATABASE_CONNECTION_STRING=postgres://<postgraphile-user>:<postgraphile-user-password>@db:5432/golinks
+DATABASE_SCHEMA=public
+NODE_ENV=production
+AUTH0_DOMAIN=<auth0-domain>
+AUTH0_AUDIENCE=<auth0-audience>
+AUTH0_CLIENT_ID=<auth0-client-id>
+AUTH0_CLIENT_SECRET=<auth0-client-secret>
+AUTH0_COOKIE_SECRET=<auth0-cookie-secret>
+AUTH0_COOKIE_DOMAIN=localhost
+AUTH0_REDIRECT_URL=http://localhost:3000/api/callback
+AUTH0_POST_LOGOUT_REDIRECT_URL=http://localhost:3000
+EOL
 
+# Environment Variables for the Cloud SQL Proxy
 export GCP_KEY_PATH="~/cloud-sql-service-account.json"
 export CLOUDSQL_INSTANCE="<gcp-project>:<gcp-region>:<cloud-sql-instance-name>=tcp:0.0.0.0:5432"
-export DATABASE_USER="postgres"
-export DATABASE_PASS="<some-password>"
-export DATABASE_NAME="golinks"
-export DATABASE_SCHEMA="public"
 
 docker-compose -f ./docker-compose-cloud-sql.yml up
 ```
@@ -143,10 +184,6 @@ docker-compose -f ./docker-compose-cloud-sql.yml up
 ```sh
 docker build . -t armand1m/golinks
 ```
-
-## Stargazers
-
-[![Stargazers over time](https://starchart.cc/armand1m/golinks.svg)](https://starchart.cc/armand1m/golinks)
 
 ## License
 

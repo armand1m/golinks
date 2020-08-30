@@ -24,8 +24,6 @@ const commonProperties: Partial<PostGraphileOptions> = {
       claims.permissions
     );
 
-    console.log('pgSettings: ', settings);
-
     return settings;
   },
 };
