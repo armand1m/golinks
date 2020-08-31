@@ -1,6 +1,6 @@
 # golinks
 
-This application is deployed at https://go.armand1m.dev
+This application is deployed at https://go.d1m.dev
 
 This is an implementation of Go Links powered by [Next.js](https://nextjs.org/), [GraphQL](http://graphql.org/) through [PostGraphile](https://www.graphile.org/postgraphile/) and [Auth0](https://www.auth0.com).
 
