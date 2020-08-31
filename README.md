@@ -4,7 +4,7 @@ This application is deployed at https://go.armand1m.dev
 
 This is an implementation of Go Links powered by [Next.js](https://nextjs.org/), [GraphQL](http://graphql.org/) through [PostGraphile](https://www.graphile.org/postgraphile/) and [Auth0](https://www.auth0.com).
 
-In short, Go Links are a type of URL Shorteners. You can create an alias that points to an URL and will redirect to user to that URL.
+In short, Go Links are a type of URL Shorteners. You can create an alias that points to an URL and will redirect the user to that URL.
 
 Please check the [Related](#related) section to have a glance on how other companies and universities leverage go links.
 
@@ -93,6 +93,55 @@ Create the virtual service and destination rules:
 kubectl apply -f ./kubernetes/istio/virtual-service.yaml
 kubectl apply -f ./kubernetes/istio/destination-rule.yaml
 ```
+
+## Authentication
+
+This app leverages [Auth0](https://auth0.com) as an Identity provider. Auth0 is used to manage users and their permissions to access and modify data in this application.
+
+### Configuring Auth0
+
+> In the future, these steps will be automated through the Auth0 Provider for Terraform.
+
+**Create a Regular Web Application:**
+
+It's important that it is a Regular Web Application since this is a Next.js app. It also relies on the `accessToken` being a JWT token, so the server can extract roles and permissions from Auth0.
+
+**Setup callback and logout urls:**
+
+Setup the callback and logout url's to redirect to your domain + the route.
+
+E.g.: 
+
+Callback URL: `http://localhost:3000/api/callback`
+Post Logout Redirect URL: `http://localhost:3000`
+
+Keep the `audience`, `domain`, `client_id` and `client_secret` for easy access, as you'll need these to spin up the server (both in development and production)
+
+**Create the following roles and permissions**:
+
+I'm using YAML here to give a better representation of how the permissions should be setup in Auth0 roles:
+
+```yaml
+role: editor
+permissions:
+- create:golinks
+- update:golinks
+- delete:golinks
+```
+
+```yaml
+role: viewer
+permissions:
+- read:golinks
+```
+
+These roles are used by Postgraphile when setting up a transaction for a query in a specific request context. This allows us to leverage Row Level Security through Postgres Policies to avoid access to data in the source of truth.
+
+These roles are also used in the frontend to avoid rendering features for the user.
+
+**Create an user and assign roles:**
+
+Create an user and assign both the `editor` and `viewer` roles so you have access to all features.
 
 ## Developing
 
