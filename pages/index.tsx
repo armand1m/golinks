@@ -13,6 +13,7 @@ import {
   Heading,
   Button,
   Spinner,
+  useToasts,
 } from 'bumbag';
 
 import { IClaims } from '../lib/auth';
@@ -34,7 +35,9 @@ const Index: React.FC<Props> = ({ grants }) => {
   const [deleteLink] = useDeleteLinkMutation();
   const { loading, data, refetch } = useGetAllLinksQuery();
   const createLinkModal = Modal.useState();
+  const toasts = useToasts();
 
+  const canEdit = grants.permissions.includes('update:golinks');
   const canCreate = grants.permissions.includes('create:golinks');
   const canDelete = grants.permissions.includes('delete:golinks');
 
@@ -45,6 +48,8 @@ const Index: React.FC<Props> = ({ grants }) => {
           <Heading>go.armand1m.dev</Heading>
           <Flex alignItems="center">
             <Button
+              variant="ghost"
+              palette="primary"
               onClick={() => window.location.replace('/api/logout')}>
               Logout
             </Button>
@@ -64,15 +69,29 @@ const Index: React.FC<Props> = ({ grants }) => {
                   {...createLinkModal}>
                   <CreateLinkForm
                     onSubmit={async (values, form) => {
-                      await createLink({
-                        variables: values,
-                      });
+                      try {
+                        await createLink({
+                          variables: values,
+                        });
 
-                      await refetch();
+                        toasts.success({
+                          title: 'Link Created',
+                          message: 'Link was successfully created.',
+                        });
 
-                      createLinkModal.hide();
-
-                      form.resetForm();
+                        createLinkModal.hide();
+                        form.resetForm();
+                        refetch();
+                      } catch (e) {
+                        console.error(
+                          'Failed to create Link, details: ',
+                          e
+                        );
+                        toasts.danger({
+                          title: 'Failed to create Link',
+                          message: 'An unexpected error occurred.',
+                        });
+                      }
                     }}
                   />
                 </Dialog.Modal>
@@ -89,14 +108,56 @@ const Index: React.FC<Props> = ({ grants }) => {
               <LinkTable
                 data={data}
                 isDeleteEnabled={canDelete}
-                onDelete={async (linkId) => {
-                  await deleteLink({
-                    variables: {
-                      id: linkId,
-                    },
-                  });
+                isEditEnabled={canEdit}
+                onEdit={async (_linkId) => {
+                  /** Open EditLinkForm with data prefilled. */
+                }}
+                onShare={async (linkUrl) => {
+                  try {
+                    await navigator.clipboard.writeText(linkUrl);
 
-                  await refetch();
+                    toasts.success({
+                      title: 'Link Copied',
+                      message: 'Link is in your clipboard.',
+                    });
+                  } catch (e) {
+                    console.error(
+                      'Failed to Copy Link, details: ',
+                      e
+                    );
+                    toasts.danger({
+                      title: 'Failed to Copy Link',
+                      message: 'An unexpected error occurred.',
+                    });
+                  }
+                }}
+                onAnalytics={async (_linkId) => {
+                  /** Open Analytics Modal */
+                }}
+                onDelete={async (linkId) => {
+                  try {
+                    await deleteLink({
+                      variables: {
+                        id: linkId,
+                      },
+                    });
+
+                    toasts.success({
+                      title: 'Link Deleted',
+                      message: 'Link was successfully deleted.',
+                    });
+
+                    refetch();
+                  } catch (e) {
+                    console.error(
+                      'Failed to delete Link, details: ',
+                      e
+                    );
+                    toasts.danger({
+                      title: 'Failed to delete Link',
+                      message: 'An unexpected error occurred.',
+                    });
+                  }
                 }}
               />
             )}
