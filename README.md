@@ -23,8 +23,10 @@ Please check the [Related](#related) section to have a glance on how other compa
 
 ## Feature Checklist
 
-These are only just a few of the ideas that come in my mind.
+These are just a few ideas that come in my mind.
 Please feel free to suggest more features by creating an Issue. I'd love to hear your thoughts.
+
+Contributions for the following are very welcome.
 
 - [x] Create Links
 - [x] Delete Links
@@ -41,6 +43,10 @@ Please feel free to suggest more features by creating an Issue. I'd love to hear
   - [ ] Graph: Usage over Time 
 - [ ] Link Ownership
 - [ ] Link Parameters
+- [ ] Private Links
+- [ ] Temporary Links
+- [ ] Random Alias
+- [ ] Chrome Plugin
 
 ## Deploying
 
