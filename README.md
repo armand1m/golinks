@@ -57,9 +57,9 @@ Aliases created can be accessed through your deployment URL + the alias name. _(
 This allows Chrome to recognize the "go" keyword in the address bar. Type "go", a space and then the alias for your link.
 
 - Go to [chrome://settings/searchEngines](chrome://settings/searchEngines) > Other search engines > Add
-- **Search engine:** my short links
+- **Search engine:** golinks
 - **Keyword**: go
-- URL with `%s` in place of query: https://go.mydomain.com/%s
+- **URL with `%s` in place of query:** https://go.mydomain.com/%s
 
 ## Deploying
 
