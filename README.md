@@ -40,7 +40,7 @@ Contributions for the following are very welcome.
 - [ ] Link Suggestion on 404
 - [x] Link Usage Metrics
   - [x] Number: Usage Total Count
-  - [ ] Graph: Usage over Time 
+  - [x] Graph: Usage of last 14 days
 - [ ] Link Ownership
 - [ ] Link Parameters
 - [ ] Private Links
@@ -196,6 +196,8 @@ AUTH0_COOKIE_SECRET=<auth0-cookie-secret>
 AUTH0_COOKIE_DOMAIN=localhost
 AUTH0_REDIRECT_URL=http://localhost:3000/api/callback
 AUTH0_POST_LOGOUT_REDIRECT_URL=http://localhost:3000
+HOSTNAME=http://localhost:3000
+LOGONAME=go.mydomain.dev
 EOL
 
 docker-compose up
@@ -219,6 +221,8 @@ AUTH0_COOKIE_SECRET=<auth0-cookie-secret>
 AUTH0_COOKIE_DOMAIN=localhost
 AUTH0_REDIRECT_URL=http://localhost:3000/api/callback
 AUTH0_POST_LOGOUT_REDIRECT_URL=http://localhost:3000
+HOSTNAME=http://localhost:3000
+LOGONAME=go.mydomain.dev
 EOL
 
 # Environment Variables for the Cloud SQL Proxy
