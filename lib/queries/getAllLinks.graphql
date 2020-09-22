@@ -6,6 +6,9 @@ query getAllLinks {
       alias
       linkUsageMetrics {
         totalCount
+        nodes {
+          accessedAt
+        }
       }
     }
   }
