@@ -37,6 +37,10 @@ spec:
         ports:
         - containerPort: 3000
         env:
+        - name: HOSTNAME
+          value: ${HOSTNAME}
+        - name: LOGONAME
+          value: ${LOGONAME} 
         - name: AUTH0_DOMAIN
           value: ${AUTH0_DOMAIN}
         - name: AUTH0_AUDIENCE
