@@ -1,6 +1,6 @@
 # golinks
 
-This application is deployed at https://go.d1m.dev
+This application is deployed at https://go.d1m.dev. Signup is enabled for view only mode.
 
 This is an implementation of Go Links powered by [Next.js](https://nextjs.org/), [GraphQL](http://graphql.org/) through [PostGraphile](https://www.graphile.org/postgraphile/) and [Auth0](https://www.auth0.com).
 
@@ -9,7 +9,7 @@ In short, Go Links are a type of URL Shorteners. You can create an alias that po
 Please check the [Related](#related) section to have a glance on how other companies and universities leverage go links.
 
 <div style="max-width: 700px">
-  <img src="./.github/redirect.gif?raw=true">
+  <img src="./.github/mainpage.png?raw=true">
 </div>
 
 ## Related
@@ -48,6 +48,19 @@ Contributions for the following are very welcome.
 - [ ] Random Alias
 - [ ] Chrome Plugin
 
+## Usage
+
+Aliases created can be accessed through your deployment URL + the alias name. _(e.g.: https://go.d1m.dev/twitter redirects to my twitter)_
+
+### Chrome Custom Search Engine
+
+This allows Chrome to recognize the "go" keyword in the address bar. Type "go", a space and then the alias for your link.
+
+- Go to [chrome://settings/searchEngines](chrome://settings/searchEngines) > Other search engines > Add
+- **Search engine:** golinks
+- **Keyword**: go
+- **URL with `%s` in place of query:** https://go.mydomain.com/%s
+
 ## Deploying
 
 A Docker Image is available at Docker Hub: https://hub.docker.com/r/armand1m/golinks
@@ -82,10 +95,25 @@ kubectl create secret generic auth0-properties \
   --from-literal=cookie_secret='random-cookie-secret'
 ```
 
+Export needed environment variables for `envsubst`:
+
+```sh
+export GOOGLE_CLOUD_PROJECT=<gcp-project>
+export GOOGLE_CLOUD_REGION=<gcp-region>
+export CLOUDSQL_INSTANCE_NAME=<cloud-sql-instance-name>
+export HOSTNAME=https://go.mydomain.com
+export LOGONAME=golinks
+export AUTH0_DOMAIN=<auth0-domain>
+export AUTH0_AUDIENCE=<auth0-audience>
+export AUTH0_COOKIE_DOMAIN=go.mydomain.com
+export AUTH0_REDIRECT_URL=https://go.mydomain.com/api/callback
+export AUTH0_POST_LOGOUT_REDIRECT_URL=https://go.mydomain.com
+```
+
 Create a deployment and service:
 
 ```sh
-kubectl apply -f ./kubernetes/deployment.yaml
+cat ./kubernetes/deployment.yaml | envsubst | kubectl apply -f -
 kubectl apply -f ./kubernetes/service.yaml
 ```
 
@@ -96,7 +124,11 @@ kubectl apply -f ./kubernetes/service.yaml
 Create the virtual service and destination rules:
 
 ```sh
-kubectl apply -f ./kubernetes/istio/virtual-service.yaml
+# switch for the name of your gateway
+export ISTIO_GATEWAY_NAME=istio-ingressgateway
+export HOSTNAME=go.mydomain.com
+
+cat ./kubernetes/istio/virtual-service.yaml | envsubst | kubectl apply -f -
 kubectl apply -f ./kubernetes/istio/destination-rule.yaml
 ```
 
