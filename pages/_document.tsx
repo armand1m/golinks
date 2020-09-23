@@ -8,6 +8,7 @@ export default class MyDocument extends Document {
     const initialProps = await Document.getInitialProps(ctx);
     const styles = extractCritical(initialProps.html);
 
+    console.log(styles);
     return {
       ...initialProps,
       styles: (
