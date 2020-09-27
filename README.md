@@ -204,7 +204,34 @@ Start the database:
 docker-compose up -d db
 ```
 
-Prepare the project and run in development mode:
+Run the migrations using [`dbmate`](https://github.com/amacneil/dbmate):
+
+```sh
+export DATABASE_URL=postgres://dev:dev@127.0.0.1:5432/golinks?sslmode=disable
+dbmate up
+```
+
+Regenerate the `./lib/type-defs.graphqls` with:
+
+```sh
+npx postgraphile \
+  --connection 'postgres://dev:dev@localhost:5432/golinks' \
+  --schema public \
+  --export-schema-graphql ./lib/type-defs.graphqls \
+  --subscriptions \
+  --dynamic-json \
+  --no-setof-functions-contain-nulls \
+  --no-ignore-rbac \
+  --no-ignore-indexes \
+  --show-error-stack=json \
+  --extended-errors hint,detail,errcode \
+  --append-plugins @graphile-contrib/pg-simplify-inflector \
+  --enable-query-batching \
+  --legacy-relations omit \
+  --no-server
+```
+
+Download dependencies and run in development mode:
 
 ```sh
 yarn

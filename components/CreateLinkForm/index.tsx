@@ -1,4 +1,4 @@
-import { Link, FieldStack, Button, InputField } from 'bumbag';
+import { Link, InputField } from 'bumbag';
 import * as Yup from 'yup';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
 
@@ -24,7 +24,31 @@ interface Props {
   ) => void | Promise<void>;
 }
 
-export const CreateLinkForm: React.FC<Props> = ({ onSubmit }) => {
+export const Fields = () => {
+  return (
+    <>
+      <Field
+        component={InputField.Formik}
+        name="alias"
+        label="Alias"
+        required
+      />
+
+      <Field
+        component={InputField.Formik}
+        name="url"
+        label="Url"
+        type="url"
+        required
+      />
+    </>
+  );
+};
+
+export const FormWrapper: React.FC<Props> = ({
+  onSubmit,
+  children,
+}) => {
   return (
     <Formik
       onSubmit={(values, form) => {
@@ -35,26 +59,7 @@ export const CreateLinkForm: React.FC<Props> = ({ onSubmit }) => {
         alias: '',
         url: '',
       }}>
-      <Form>
-        <FieldStack>
-          <Field
-            component={InputField.Formik}
-            name="alias"
-            label="Alias"
-            required
-          />
-
-          <Field
-            component={InputField.Formik}
-            name="url"
-            label="Url"
-            type="url"
-            required
-          />
-
-          <Button type="submit">Create</Button>
-        </FieldStack>
-      </Form>
+      <Form>{children}</Form>
     </Formik>
   );
 };

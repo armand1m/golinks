@@ -6,8 +6,9 @@ import {
 } from 'next';
 import {
   Modal,
-  Dialog,
   Flex,
+  Box,
+  Dialog,
   TopNav,
   PageWithHeader,
   Heading,
@@ -17,11 +18,15 @@ import {
   Button,
   Stack,
   Set,
+  FieldStack,
 } from 'bumbag';
 
 import { IClaims } from '../lib/auth';
-import { CreateLinkForm } from '../components/CreateLinkForm';
-import { useGetAllLinksQuery } from '../lib/queries/getAllLinks.graphql';
+import * as CreateLinkForm from '../components/CreateLinkForm';
+import {
+  useGetAllLinksQuery,
+  Link,
+} from '../lib/queries/getAllLinks.graphql';
 import { useCreateLinkMutation } from '../lib/mutations/createLink.graphql';
 import { useDeleteLinkMutation } from '../lib/mutations/deleteLink.graphql';
 
@@ -37,18 +42,26 @@ interface Props {
   };
 }
 
+type ViewType = 'card' | 'table';
+
+const Loader = () => (
+  <Flex alignX="center">
+    <Spinner size="medium" />
+  </Flex>
+);
+
 const Index: React.FC<Props> = ({ logoname, hostname, grants }) => {
-  const [createLink] = useCreateLinkMutation();
-  const [deleteLink] = useDeleteLinkMutation();
-  const { loading, data, refetch } = useGetAllLinksQuery();
-  const createLinkModal = Modal.useState();
   const toasts = useToasts();
+
+  const [createLink, createLinkStatus] = useCreateLinkMutation();
+  const [deleteLink, deleteLinkStatus] = useDeleteLinkMutation();
+  const allLinks = useGetAllLinksQuery();
 
   const canEdit = grants.permissions.includes('update:golinks');
   const canCreate = grants.permissions.includes('create:golinks');
   const canDelete = grants.permissions.includes('delete:golinks');
 
-  const [viewType, setViewType] = useState<'card' | 'table'>('card');
+  const [viewType, setViewType] = useState<ViewType>('card');
 
   const toggleViewType = () =>
     setViewType((currentViewType) =>
@@ -57,6 +70,77 @@ const Index: React.FC<Props> = ({ logoname, hostname, grants }) => {
 
   const LinkViewComponent =
     viewType === 'card' ? LinkCards : LinkTable;
+
+  const onCreateLink = async (
+    values: Pick<Link, 'alias' | 'url'>
+  ) => {
+    try {
+      await createLink({
+        variables: values,
+      });
+
+      await allLinks.refetch();
+
+      toasts.success({
+        title: 'Link Created',
+        message: 'Link was successfully created.',
+      });
+    } catch (error) {
+      console.error('Failed to create Link, details: ', error);
+      toasts.danger({
+        title: 'Failed to create Link',
+        message: 'An unexpected error occurred.',
+      });
+    }
+  };
+
+  const onEditLink = async (_linkId: string) => {
+    /** Open EditLinkForm with data prefilled. */
+  };
+
+  const onViewLinkAnalytics = async (_linkId: string) => {
+    /** Open Analytics Modal */
+  };
+
+  const onShareLink = async (linkUrl: string) => {
+    try {
+      await navigator.clipboard.writeText(linkUrl);
+
+      toasts.success({
+        title: 'Link Copied',
+        message: 'Link is in your clipboard.',
+      });
+    } catch (error) {
+      console.error('Failed to Copy Link, details: ', error);
+      toasts.danger({
+        title: 'Failed to Copy Link',
+        message: 'An unexpected error occurred.',
+      });
+    }
+  };
+
+  const onDeleteLink = async (linkId: string) => {
+    try {
+      await deleteLink({
+        variables: {
+          id: linkId,
+        },
+      });
+
+      await allLinks.refetch();
+
+      toasts.success({
+        title: 'Link Deleted',
+        message: 'Link was successfully deleted.',
+      });
+    } catch (error) {
+      console.error('Failed to delete Link, details: ', error);
+      toasts.danger({
+        title: 'Failed to delete Link',
+        message: 'An unexpected error occurred.',
+      });
+    }
+  };
 
   return (
     <PageWithHeader
@@ -83,123 +167,76 @@ const Index: React.FC<Props> = ({ logoname, hostname, grants }) => {
           </TopNav.Section>
         </TopNav>
       }>
-      {canCreate && (
-        <Dialog.Modal
-          showCloseButton
-          title="Create Go Link"
-          {...createLinkModal}>
-          <CreateLinkForm
-            onSubmit={async (values, form) => {
-              try {
-                await createLink({
-                  variables: values,
-                });
-
-                toasts.success({
-                  title: 'Link Created',
-                  message: 'Link was successfully created.',
-                });
-
-                createLinkModal.hide();
-                form.resetForm();
-                refetch();
-              } catch (error) {
-                console.error(
-                  'Failed to create Link, details: ',
-                  error
-                );
-                toasts.danger({
-                  title: 'Failed to create Link',
-                  message: 'An unexpected error occurred.',
-                });
-              }
-            }}
-          />
-        </Dialog.Modal>
-      )}
-
       <Container padding="major-3">
         <Stack>
           <Set>
             {canCreate && (
-              <Modal.Disclosure
-                use={Button}
-                {...createLinkModal}
-                disabled={!canCreate}>
-                Create
-              </Modal.Disclosure>
+              <Modal.State>
+                {(modal) => (
+                  <>
+                    <Dialog.Modal
+                      {...modal}
+                      baseId="create-link-modal"
+                      title="Create Link"
+                      standalone>
+                      <CreateLinkForm.FormWrapper
+                        onSubmit={async (values, form) => {
+                          await onCreateLink(values);
+                          modal.hide();
+                          form.resetForm();
+                        }}>
+                        <Dialog.Content>
+                          <Box>
+                            <Dialog.Header>
+                              <Dialog.Title>Create Link</Dialog.Title>
+                            </Dialog.Header>
+                            <FieldStack>
+                              <CreateLinkForm.Fields />
+                            </FieldStack>
+                          </Box>
+                        </Dialog.Content>
+                        <Dialog.Footer justifyContent="flex-end">
+                          <Set>
+                            <Button type="reset" onClick={modal.hide}>
+                              Cancel
+                            </Button>
+                            <Button
+                              palette="primary"
+                              isLoading={
+                                createLinkStatus.loading ||
+                                allLinks.loading
+                              }
+                              type="submit">
+                              Create
+                            </Button>
+                          </Set>
+                        </Dialog.Footer>
+                      </CreateLinkForm.FormWrapper>
+                    </Dialog.Modal>
+                    <Modal.Disclosure use={Button}>
+                      Create
+                    </Modal.Disclosure>
+                  </>
+                )}
+              </Modal.State>
             )}
 
             <Button onClick={toggleViewType}>Toggle View Type</Button>
           </Set>
 
-          {loading && (
-            <Flex alignX="center">
-              <Spinner size="medium" />
-            </Flex>
-          )}
+          {allLinks.loading && <Loader />}
 
-          {data !== undefined && data !== null && (
-            <Suspense
-              fallback={
-                <Flex alignX="center">
-                  <Spinner size="medium" />
-                </Flex>
-              }>
+          {allLinks.data !== undefined && allLinks.data !== null && (
+            <Suspense fallback={<Loader />}>
               <LinkViewComponent
-                data={data}
+                data={allLinks.data}
                 isDeleteEnabled={canDelete}
                 isEditEnabled={canEdit}
-                onEdit={async (_linkId) => {
-                  /** Open EditLinkForm with data prefilled. */
-                }}
-                onShare={async (linkUrl) => {
-                  try {
-                    await navigator.clipboard.writeText(linkUrl);
-
-                    toasts.success({
-                      title: 'Link Copied',
-                      message: 'Link is in your clipboard.',
-                    });
-                  } catch (error) {
-                    console.error(
-                      'Failed to Copy Link, details: ',
-                      error
-                    );
-                    toasts.danger({
-                      title: 'Failed to Copy Link',
-                      message: 'An unexpected error occurred.',
-                    });
-                  }
-                }}
-                onAnalytics={async (_linkId) => {
-                  /** Open Analytics Modal */
-                }}
-                onDelete={async (linkId) => {
-                  try {
-                    await deleteLink({
-                      variables: {
-                        id: linkId,
-                      },
-                    });
-
-                    toasts.success({
-                      title: 'Link Deleted',
-                      message: 'Link was successfully deleted.',
-                    });
-
-                    refetch();
-                  } catch (error) {
-                    console.error(
-                      'Failed to delete Link, details: ',
-                      error
-                    );
-                    toasts.danger({
-                      title: 'Failed to delete Link',
-                      message: 'An unexpected error occurred.',
-                    });
-                  }
-                }}
+                onEdit={onEditLink}
+                onShare={onShareLink}
+                onAnalytics={onViewLinkAnalytics}
+                onDelete={onDeleteLink}
+                isDeleting={deleteLinkStatus.loading}
               />
             </Suspense>
           )}

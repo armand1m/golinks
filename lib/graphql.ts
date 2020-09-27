@@ -8,7 +8,10 @@ const commonProperties: Partial<PostGraphileOptions> = {
   setofFunctionsContainNulls: false,
   ignoreRBAC: false,
   ignoreIndexes: false,
-  appendPlugins: [require('@graphile-contrib/pg-simplify-inflector')],
+  appendPlugins: [
+    require('@graphile-contrib/pg-simplify-inflector'),
+    require('postgraphile/plugins').TagsFilePlugin,
+  ],
   graphqlRoute: '/api/graphql',
   graphiqlRoute: '/api/graphiql',
   legacyRelations: 'omit',

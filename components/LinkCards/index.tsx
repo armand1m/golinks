@@ -5,6 +5,7 @@ import {
   Link as FannyLink,
   Button,
   Set,
+  Icon,
   Stack,
   Card,
 } from 'bumbag';
@@ -19,6 +20,7 @@ interface Props {
   onShare: (linkUrl: string) => void | Promise<void>;
   onAnalytics: (linkId: string) => void | Promise<void>;
   onEdit: (linkId: string) => void | Promise<void>;
+  isDeleting: boolean;
 }
 
 export const LinkCards: React.FC<Props> = ({
@@ -29,6 +31,7 @@ export const LinkCards: React.FC<Props> = ({
   // onEdit,
   onShare,
   // onAnalytics,
+  isDeleting,
 }) => {
   const links = data?.links;
 
@@ -50,9 +53,8 @@ export const LinkCards: React.FC<Props> = ({
             headerAddon={
               <Set>
                 <Button
+                  size="small"
                   palette="primary"
-                  variant="link"
-                  iconBefore="solid-share"
                   onClick={() => {
                     const url = new URL(
                       link.alias,
@@ -60,17 +62,17 @@ export const LinkCards: React.FC<Props> = ({
                     ).toString();
                     onShare(url);
                   }}>
-                  Share
+                  <Icon icon="solid-share" />
                 </Button>
                 {isDeleteEnabled && (
                   <Button
+                    size="small"
                     palette="danger"
-                    variant="link"
-                    iconBefore="solid-trash-alt"
+                    isLoading={isDeleting}
                     onClick={() => {
                       onDelete(link.id);
                     }}>
-                    Delete
+                    <Icon icon="solid-trash-alt" />
                   </Button>
                 )}
               </Set>
