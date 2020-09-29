@@ -16,6 +16,7 @@ EXPOSE 3000
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/postgraphile.tags.json5 ./postgraphile.tags.json5
 RUN npx next telemetry disable
 
 CMD ["node_modules/.bin/next", "start"]
