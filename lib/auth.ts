@@ -3,27 +3,10 @@ import jsonwebtoken from 'jsonwebtoken';
 import jwksRsa from 'jwks-rsa';
 import { initAuth0 } from '@auth0/nextjs-auth0';
 import { ISession } from '@auth0/nextjs-auth0/dist/session/session';
-
-const ANONYMOUS_PERMISSIONS = ['read:golinks'];
-const ANONYMOUS_ROLES = ['viewer'];
-
-const DOMAIN = String(process.env.AUTH0_DOMAIN);
-const AUDIENCE = String(process.env.AUTH0_AUDIENCE);
-const CLIENT_ID = String(process.env.AUTH0_CLIENT_ID);
-const CLIENT_SECRET = String(process.env.AUTH0_CLIENT_SECRET);
-const COOKIE_DOMAIN = String(process.env.AUTH0_COOKIE_DOMAIN);
-const COOKIE_SECRET = String(process.env.AUTH0_COOKIE_SECRET);
-const REDIRECT_URL = String(process.env.AUTH0_REDIRECT_URL);
-const POST_LOGOUT_REDIRECT_URL = String(
-  process.env.AUTH0_POST_LOGOUT_REDIRECT_URL
-);
-
-const jwksSecretClient = jwksRsa({
-  cache: true,
-  rateLimit: true,
-  jwksRequestsPerMinute: 5,
-  jwksUri: `https://${DOMAIN}/.well-known/jwks.json`,
-});
+import { Config } from './config';
+import { ISignInWithAuth0 } from '@auth0/nextjs-auth0/dist/instance';
+import { NextApiRequest } from 'next';
+import { UserRole, UserPermission } from './permissions';
 
 interface JwtHeader {
   kid: string;
@@ -52,13 +35,18 @@ interface DecodedJwtToken {
 }
 
 export const getPermissionsFromSession = async (
-  session?: ISession | null
+  session: ISession
 ) => {
-  if (!session || !session.accessToken) {
-    return {
-      permissions: ANONYMOUS_PERMISSIONS,
-      roles: ANONYMOUS_ROLES,
-    };
+  if (!Config.auth0) {
+    throw new Error(
+      "Missing Auth0 parameters. Make sure you've passed correctly all environment variables."
+    );
+  }
+
+  if (!session.accessToken) {
+    throw new Error(
+      'Session is missing an access token. This is an issue with your auth provider.'
+    );
   }
 
   const decodedAccessToken = jsonwebtoken.decode(
@@ -70,6 +58,13 @@ export const getPermissionsFromSession = async (
     throw new Error('Failed to decode token.');
   }
 
+  const jwksSecretClient = jwksRsa({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: `https://${Config.auth0.domain}/.well-known/jwks.json`,
+  });
+
   const signingKey = await promisify(jwksSecretClient.getSigningKey)(
     decodedAccessToken.header.kid
   );
@@ -78,8 +73,8 @@ export const getPermissionsFromSession = async (
     session.accessToken,
     signingKey.getPublicKey(),
     {
-      audience: AUDIENCE,
-      issuer: new URL(`https://${DOMAIN}`).href,
+      audience: Config.auth0.audience,
+      issuer: new URL(`https://${Config.auth0.domain}`).href,
       algorithms: ['RS256'],
     }
   );
@@ -93,35 +88,82 @@ export const getPermissionsFromSession = async (
   const jwtToken = token as DecodedJwtToken;
 
   return {
-    permissions: jwtToken.permissions || ANONYMOUS_PERMISSIONS,
-    roles: jwtToken['https://user/roles'] || ANONYMOUS_ROLES,
+    permissions:
+      (jwtToken.permissions as UserPermission[]) ||
+      Config.anonymous.permissions,
+    roles:
+      (jwtToken['https://user/roles'] as UserRole[]) ||
+      Config.anonymous.roles,
   };
 };
 
-export const auth0 = initAuth0({
-  domain: DOMAIN,
-  clientId: CLIENT_ID,
-  audience: AUDIENCE,
-  clientSecret: CLIENT_SECRET,
-  scope: 'openid email profile',
-  redirectUri: REDIRECT_URL,
-  postLogoutRedirectUri: POST_LOGOUT_REDIRECT_URL,
-  session: {
-    cookieSecret: COOKIE_SECRET,
-    cookieLifetime: 60 * 60 * 8,
-    cookieDomain:
-      process.env.NODE_ENV === 'development'
-        ? 'localhost'
-        : COOKIE_DOMAIN,
-    cookieSameSite: 'lax',
-    storeIdToken: true,
-    storeAccessToken: true,
-    storeRefreshToken: true,
-  },
-  oidcClient: {
-    httpTimeout: 2500,
-    clockTolerance: 10000,
-  },
-});
+export const getUserClaimsFromRequest = async (
+  request: NextApiRequest
+) => {
+  if (!Config.features.auth0) {
+    return {
+      claims: Config.anonymous,
+      user: null,
+    };
+  }
+
+  const auth0 = getAuth0();
+  const session = await auth0.getSession(request);
+
+  if (!session || !session.accessToken) {
+    return {
+      claims: Config.anonymous,
+      user: null,
+    };
+  }
+
+  const claims = await getPermissionsFromSession(session);
+  return {
+    claims,
+    user: session.user,
+  };
+};
+
+export let auth0: ISignInWithAuth0 | undefined;
+
+export const getAuth0 = () => {
+  if (!Config.features.auth0 || !Config.auth0) {
+    throw new Error(
+      'Auth0 is trying to be instantiated with missing environment variables.'
+    );
+  }
+
+  if (auth0) {
+    return auth0;
+  }
+
+  auth0 = initAuth0({
+    domain: Config.auth0.domain,
+    clientId: Config.auth0.clientId,
+    audience: Config.auth0.audience,
+    clientSecret: Config.auth0.clientSecret,
+    scope: 'openid email profile',
+    redirectUri: Config.auth0.redirectUrl,
+    postLogoutRedirectUri: Config.auth0.postLogoutRedirectUrl,
+    session: {
+      cookieSecret: Config.auth0.cookieSecret,
+      cookieLifetime: 60 * 60 * 8,
+      cookieDomain:
+        Config.environment === 'development'
+          ? 'localhost'
+          : Config.auth0.cookieDomain,
+      cookieSameSite: 'lax',
+      storeIdToken: true,
+      storeAccessToken: true,
+      storeRefreshToken: true,
+    },
+    oidcClient: {
+      httpTimeout: 2500,
+      clockTolerance: 10000,
+    },
+  });
+
+  return auth0;
+};
 
 export type { IClaims } from '@auth0/nextjs-auth0/dist/session/session';

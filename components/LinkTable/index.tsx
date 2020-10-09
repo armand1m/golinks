@@ -40,7 +40,7 @@ export const LinkTable: React.FC<Props> = ({
   }
 
   return (
-    <Table isResponsive>
+    <Table isResponsive responsiveBreakpoint="tablet">
       <Table.Head>
         <Table.Row>
           <Table.HeadCell>Alias</Table.HeadCell>

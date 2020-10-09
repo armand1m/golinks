@@ -1,12 +1,28 @@
 {
-  "name": "with-typescript-graphql",
+  "name": "golinks",
   "version": "0.1.0",
-  "author": "",
-  "license": "ISC",
+  "author": "Armando Magalhaes <armando.mag95@gmail.com>",
+  "contributors": [],
+  "repository": "armand1m/golinks",
+  "homepage": "https://go.d1m.dev/",
+  "keywords": [
+    "golinks",
+    "application",
+    "urlshortener",
+    "web",
+    "http",
+    "app",
+    "api",
+    "graphql",
+    "postgresql"
+  ],
+  "license": "MIT",
   "scripts": {
     "codegen": "graphql-let",
-    "dev": "yarn codegen && next",
-    "build": "yarn codegen && next build",
+    "predev": "yarn codegen",
+    "dev": "next",
+    "prebuild": "yarn codegen",
+    "build": "next build",
     "start": "next start",
     "lint": "prettier --check './**/*.{tsx,ts}'",
     "lint:fix": "prettier --write './**/*.{tsx,ts}'"

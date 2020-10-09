@@ -22,6 +22,7 @@ interface Props {
     values: Link,
     helpers: FormikHelpers<Link>
   ) => void | Promise<void>;
+  initialValues?: Link;
 }
 
 export const Fields = () => {
@@ -48,6 +49,10 @@ export const Fields = () => {
 export const FormWrapper: React.FC<Props> = ({
   onSubmit,
   children,
+  initialValues = {
+    alias: '',
+    url: '',
+  },
 }) => {
   return (
     <Formik
@@ -55,10 +60,7 @@ export const FormWrapper: React.FC<Props> = ({
         onSubmit(values, form);
       }}
       validationSchema={CreateLinkSchema}
-      initialValues={{
-        alias: '',
-        url: '',
-      }}>
+      initialValues={initialValues}>
       <Form>{children}</Form>
     </Formik>
   );

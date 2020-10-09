@@ -33,6 +33,7 @@ Contributions for the following are very welcome.
 - [ ] Edit Links
 - [x] Redirect Links
 - [x] Auth
+  - [x] Can be disabled
   - [x] Powered by Auth0
 - [x] Security
   - [x] Row Level Security using Auth0 Roles and Permissions
@@ -43,6 +44,7 @@ Contributions for the following are very welcome.
   - [x] Graph: Usage of last 14 days
 - [ ] Link Ownership
 - [ ] Link Parameters
+- [ ] Link Groups (Folders)
 - [ ] Private Links
 - [ ] Temporary Links
 - [ ] Random Alias
@@ -103,6 +105,7 @@ export GOOGLE_CLOUD_REGION=<gcp-region>
 export CLOUDSQL_INSTANCE_NAME=<cloud-sql-instance-name>
 export HOSTNAME=https://go.mydomain.com
 export LOGONAME=golinks
+export AUHT0_ENABLED=true
 export AUTH0_DOMAIN=<auth0-domain>
 export AUTH0_AUDIENCE=<auth0-audience>
 export AUTH0_COOKIE_DOMAIN=go.mydomain.com
@@ -135,6 +138,12 @@ kubectl apply -f ./kubernetes/istio/destination-rule.yaml
 ## Authentication
 
 This app leverages [Auth0](https://auth0.com) as an Identity provider. Auth0 is used to manage users and their permissions to access and modify data in this application.
+
+### Enable Auth0
+
+To enable, make sure you set the `AUTH0_ENABLED` env var as `true`.
+
+In case this is set to `false`, every other environment variable prefixed with `AUTH0_` can be considered optional.
 
 ### Configuring Auth0
 
@@ -193,10 +202,9 @@ GraphQL Type definitions are generated on application startup during development
 
 `graphql-let` then is used to generate type definitions in Typescript for development use.
 
-### Local Database with watch mode:
+### Local Database without Auth0 in Watch mode:
 
-For development, we use the official `postgres` docker image. This image comes with a feature that initializes the database when provided a folder with scripts.
-When started without a volume setup, the image will execute all the `.sql` scripts in the `./database` folder.
+For development, we use the official `postgres` docker image. Migrations need to be ran manually using `dbmate` and the SQL scripts provided.
 
 Start the database:
 
@@ -231,6 +239,18 @@ npx postgraphile \
   --no-server
 ```
 
+Create an `.env.local` file (with auth0 disabled):
+
+```sh
+cat > ./.env.local <<EOL
+DATABASE_CONNECTION_STRING=postgres://dev:dev@db:5432/golinks
+DATABASE_SCHEMA=public
+NODE_ENV=development
+AUTH0_ENABLED=false
+HOSTNAME=http://localhost:3000
+LOGONAME=go.mydomain.dev
+EOL
+```
 Download dependencies and run in development mode:
 
 ```sh
@@ -240,13 +260,14 @@ yarn dev
 
 Access http://localhost:3000 and you should have a live development environment running.
 
-### Locally, with docker and local db:
+### Locally, with docker, local db and Auth0:
 
 ```sh
 cat > ./.env.local <<EOL
 DATABASE_CONNECTION_STRING=postgres://dev:dev@db:5432/golinks
 DATABASE_SCHEMA=public
 NODE_ENV=production
+AUTH0_ENABLED=true
 AUTH0_DOMAIN=<auth0-domain>
 AUTH0_AUDIENCE=<auth0-audience>
 AUTH0_CLIENT_ID=<auth0-client-id>
@@ -264,7 +285,7 @@ docker-compose up
 
 Access http://localhost:3000
 
-### Locally, with docker and cloud sql db:
+### Locally, with docker, cloud sql db and Auth0:
 
 ```sh
 # Environment Variables for the Application
@@ -272,6 +293,7 @@ cat > ./.env.cloud <<EOL
 DATABASE_CONNECTION_STRING=postgres://<postgraphile-user>:<postgraphile-user-password>@db:5432/golinks
 DATABASE_SCHEMA=public
 NODE_ENV=production
+AUTH0_ENABLED=true
 AUTH0_DOMAIN=<auth0-domain>
 AUTH0_AUDIENCE=<auth0-audience>
 AUTH0_CLIENT_ID=<auth0-client-id>
