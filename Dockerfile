@@ -1,8 +1,9 @@
 FROM node:alpine AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-COPY . .
+COPY package.json yarn.lock ./
 RUN yarn
+COPY . .
 RUN yarn build
 
 FROM node:alpine

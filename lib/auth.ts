@@ -1,11 +1,11 @@
+import { NextApiRequest } from 'next';
 import { promisify } from 'util';
 import jsonwebtoken from 'jsonwebtoken';
 import jwksRsa from 'jwks-rsa';
 import { initAuth0 } from '@auth0/nextjs-auth0';
 import { ISession } from '@auth0/nextjs-auth0/dist/session/session';
-import { Config } from './config';
 import { ISignInWithAuth0 } from '@auth0/nextjs-auth0/dist/instance';
-import { NextApiRequest } from 'next';
+import { Config } from './config';
 import { UserRole, UserPermission } from './permissions';
 
 interface JwtHeader {
@@ -118,6 +118,7 @@ export const getUserClaimsFromRequest = async (
   }
 
   const claims = await getPermissionsFromSession(session);
+
   return {
     claims,
     user: session.user,

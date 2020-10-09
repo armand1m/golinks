@@ -24,8 +24,6 @@ import {
 } from '../lib/queries/getAllLinks.graphql';
 import { useCreateLinkMutation } from '../lib/mutations/createLink.graphql';
 import { useDeleteLinkMutation } from '../lib/mutations/deleteLink.graphql';
-import { getUserClaimsFromRequest } from '../lib/auth';
-import { Config } from '../lib/config';
 
 const LinkTable = lazy(() => import('../components/LinkTable'));
 
@@ -225,6 +223,8 @@ export default Index;
 export const getServerSideProps: GetServerSideProps = async (
   context
 ) => {
+  const { getUserClaimsFromRequest } = await import('../lib/auth');
+  const { Config } = await import("../lib/config");
   const request = context?.req as NextApiRequest;
   const { claims, user } = await getUserClaimsFromRequest(request);
   const logoname = Config.metadata.logoname;
