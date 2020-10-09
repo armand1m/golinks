@@ -40,7 +40,9 @@ spec:
         - name: HOSTNAME
           value: ${HOSTNAME}
         - name: LOGONAME
-          value: ${LOGONAME} 
+          value: ${LOGONAME}
+        - name: AUTH0_ENABLED
+          value: ${AUTH0_ENABLED}
         - name: AUTH0_DOMAIN
           value: ${AUTH0_DOMAIN}
         - name: AUTH0_AUDIENCE

@@ -21,6 +21,7 @@ export default class MyDocument extends Document {
       ),
     };
   }
+
   render() {
     return (
       <html lang="en">

@@ -1,0 +1,12 @@
+{
+  version: 1,
+  config: {
+    class: {
+      schema_migrations: {
+        tags: {
+          omit: 'read,update,create,delete,all,many'
+        }
+      }
+    },
+  },
+}

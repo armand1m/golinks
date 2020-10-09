@@ -7,14 +7,8 @@ import {
   DropdownMenu,
   Icon,
 } from 'bumbag';
-import { Sparklines, SparklinesLine } from 'react-sparklines';
-import { compareAsc, eachDayOfInterval, sub } from 'date-fns';
-import { formatWithOptions } from 'date-fns/fp';
-import { nl } from 'date-fns/locale';
-import {
-  GetAllLinksQuery,
-  LinkUsageMetric,
-} from '../../lib/queries/getAllLinks.graphql';
+import { GetAllLinksQuery } from '../../lib/queries/getAllLinks.graphql';
+import { LinkMetricUsageGraph } from '../LinkMetricUsageGraph';
 
 interface Props {
   data: GetAllLinksQuery;
@@ -25,34 +19,6 @@ interface Props {
   onAnalytics: (linkId: string) => void | Promise<void>;
   onEdit: (linkId: string) => void | Promise<void>;
 }
-
-const dateToString = formatWithOptions({ locale: nl }, 'dd/MM/yyyy');
-
-const convertMetricsToLineChartData = (
-  linkUsageMetrics: Pick<LinkUsageMetric, 'accessedAt'>[]
-) => {
-  const days = eachDayOfInterval({
-    end: new Date(),
-    start: sub(new Date(), {
-      days: 14,
-    }),
-  });
-
-  const dates = [
-    ...linkUsageMetrics.map((metric) => new Date(metric.accessedAt)),
-    ...days,
-  ].sort(compareAsc);
-
-  const countPerDate = dates.map(dateToString).reduce(
-    (acc, date) => ({
-      ...acc,
-      [date]: (acc[date] || 0) + 1,
-    }),
-    {} as Record<string, number>
-  );
-
-  return Object.values(countPerDate);
-};
 
 export const LinkTable: React.FC<Props> = ({
   data,
@@ -74,13 +40,16 @@ export const LinkTable: React.FC<Props> = ({
   }
 
   return (
-    <Table isResponsive>
+    <Table isResponsive responsiveBreakpoint="tablet">
       <Table.Head>
         <Table.Row>
           <Table.HeadCell>Alias</Table.HeadCell>
           <Table.HeadCell>Destination</Table.HeadCell>
           <Table.HeadCell textAlign="center">
-            Usage <Text use="sub">(14 days)</Text>
+            Month Usage
+          </Table.HeadCell>
+          <Table.HeadCell textAlign="center">
+            Total Usage
           </Table.HeadCell>
           <Table.HeadCell textAlign="right">Actions</Table.HeadCell>
         </Table.Row>
@@ -104,20 +73,12 @@ export const LinkTable: React.FC<Props> = ({
                 </FannyLink>
               </Table.Cell>
               <Table.Cell textAlign="center">
-                <Sparklines
-                  data={convertMetricsToLineChartData(
-                    link.linkUsageMetrics.nodes
-                  )}
-                  limit={14}
-                  style={{ minWidth: '120px', maxWidth: '170px' }}>
-                  <SparklinesLine
-                    style={{ stroke: '#574feb', fill: '#eeedfd' }}
-                  />
-                </Sparklines>
-                <br />
-                <Text use="sub">
-                  Total Usage: {link.linkUsageMetrics.totalCount}
-                </Text>
+                <LinkMetricUsageGraph
+                  linkUsageMetrics={link.linkUsageMetrics.nodes}
+                />
+              </Table.Cell>
+              <Table.Cell textAlign="center">
+                {link.linkUsageMetrics.totalCount}
               </Table.Cell>
               <Table.Cell textAlign="right">
                 <DropdownMenu
@@ -168,3 +129,5 @@ export const LinkTable: React.FC<Props> = ({
     </Table>
   );
 };
+
+export default LinkTable;

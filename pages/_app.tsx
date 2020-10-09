@@ -3,6 +3,7 @@ import {
   Provider as ThemeProvider,
   ToastManager,
   ThemeConfig,
+  css,
 } from 'bumbag';
 import { ApolloProvider } from '@apollo/react-hooks';
 import { useApollo } from '../lib/apollo';
@@ -16,7 +17,12 @@ import {
 
 const theme: ThemeConfig = {
   modes: {
-    useSystemColorMode: true,
+    useSystemColorMode: false,
+  },
+  global: {
+    styles: {
+      base: css``,
+    },
   },
   Icon: {
     iconSets: [
@@ -40,7 +46,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <ApolloProvider client={apolloClient}>
-      <ThemeProvider colorMode="dark" theme={theme}>
+      <ThemeProvider colorMode="light" theme={theme}>
         <ToastManager />
         <Component {...pageProps} />
       </ThemeProvider>

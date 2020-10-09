@@ -10,3 +10,11 @@ cloudbuild.yaml
 cloudbuild-pr.yaml
 ./kubernetes
 .env*
+clean-local-database.sh
+run-cloud.sh
+.prettierrc
+./db
+.editorconfig
+docker-compose*
+./.github
+./.next

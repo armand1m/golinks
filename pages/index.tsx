@@ -1,190 +1,218 @@
-import {
-  GetServerSideProps,
-  NextApiRequest,
-  NextApiResponse,
-} from 'next';
+import { lazy, Suspense } from 'react';
+import { GetServerSideProps, NextApiRequest } from 'next';
+
 import {
   Modal,
-  Dialog,
   Flex,
-  TopNav,
+  Box,
+  Dialog,
   PageWithHeader,
-  DropdownMenu,
-  Avatar,
-  Heading,
   Spinner,
   useToasts,
   Container,
+  Button,
+  Stack,
+  Set,
+  FieldStack,
 } from 'bumbag';
 
-import { IClaims } from '../lib/auth';
-import { LinkTable } from '../components/LinkTable';
-import { CreateLinkForm } from '../components/CreateLinkForm';
-import { useGetAllLinksQuery } from '../lib/queries/getAllLinks.graphql';
+import { TopNavigation } from '../components/TopNavigation';
+import * as LinkForm from '../components/LinkForm';
+import {
+  Link,
+  useGetAllLinksQuery,
+} from '../lib/queries/getAllLinks.graphql';
 import { useCreateLinkMutation } from '../lib/mutations/createLink.graphql';
 import { useDeleteLinkMutation } from '../lib/mutations/deleteLink.graphql';
+
+const LinkTable = lazy(() => import('../components/LinkTable'));
 
 interface Props {
   logoname: string;
   hostname: string;
-  user: IClaims;
-  grants: {
+  isAuthEnabled: boolean;
+  isAuthenticated: boolean;
+  claims: {
     permissions: string[];
   };
 }
 
+const Loader = () => (
+  <Flex alignX="center">
+    <Spinner size="medium" />
+  </Flex>
+);
+
 const Index: React.FC<Props> = ({
-  user,
   logoname,
   hostname,
-  grants,
+  claims,
+  isAuthEnabled,
+  isAuthenticated,
 }) => {
-  const [createLink] = useCreateLinkMutation();
-  const [deleteLink] = useDeleteLinkMutation();
-  const { loading, data, refetch } = useGetAllLinksQuery();
-  const createLinkModal = Modal.useState();
   const toasts = useToasts();
 
-  const canEdit = grants.permissions.includes('update:golinks');
-  const canCreate = grants.permissions.includes('create:golinks');
-  const canDelete = grants.permissions.includes('delete:golinks');
+  const [createLink, createLinkStatus] = useCreateLinkMutation();
+  const [deleteLink] = useDeleteLinkMutation();
+  const allLinks = useGetAllLinksQuery();
+
+  const canEdit = claims.permissions.includes('update:golinks');
+  const canCreate = claims.permissions.includes('create:golinks');
+  const canDelete = claims.permissions.includes('delete:golinks');
+
+  const onCreateLink = async (
+    values: Pick<Link, 'alias' | 'url'>
+  ) => {
+    try {
+      await createLink({
+        variables: values,
+      });
+
+      await allLinks.refetch();
+
+      toasts.success({
+        title: 'Link Created',
+        message: 'Link was successfully created.',
+      });
+    } catch (error) {
+      console.error('Failed to create Link, details: ', error);
+      toasts.danger({
+        title: 'Failed to create Link',
+        message: 'An unexpected error occurred.',
+      });
+    }
+  };
+
+  const onEditLink = async (_linkId: string) => {
+    /** Open EditLinkForm with data prefilled. */
+  };
+
+  const onViewLinkAnalytics = async (_linkId: string) => {
+    /** Open Analytics Modal */
+  };
+
+  const onShareLink = async (linkUrl: string) => {
+    try {
+      await navigator.clipboard.writeText(linkUrl);
+
+      toasts.success({
+        title: 'Link Copied',
+        message: 'Link is in your clipboard.',
+      });
+    } catch (error) {
+      console.error('Failed to Copy Link, details: ', error);
+      toasts.danger({
+        title: 'Failed to Copy Link',
+        message: 'An unexpected error occurred.',
+      });
+    }
+  };
+
+  const onDeleteLink = async (linkId: string) => {
+    try {
+      await deleteLink({
+        variables: {
+          id: linkId,
+        },
+      });
+
+      await allLinks.refetch();
+
+      toasts.success({
+        title: 'Link Deleted',
+        message: 'Link was successfully deleted.',
+      });
+    } catch (error) {
+      console.error('Failed to delete Link, details: ', error);
+      toasts.danger({
+        title: 'Failed to delete Link',
+        message: 'An unexpected error occurred.',
+      });
+    }
+  };
 
   return (
     <PageWithHeader
-      headerHeight="80px"
-      border="default"
       header={
-        <TopNav>
-          <TopNav.Section>
-            <TopNav.Item href={hostname} fontWeight="semibold">
-              <Heading>{logoname}</Heading>
-            </TopNav.Item>
-            <Modal.Disclosure
-              use={TopNav.Item}
-              {...createLinkModal}
-              disabled={!canCreate}>
-              Create
-            </Modal.Disclosure>
-          </TopNav.Section>
-          <TopNav.Section marginRight="major-2">
-            <DropdownMenu
-              menu={
-                <>
-                  <DropdownMenu.Item
-                    iconBefore="solid-sign-out-alt"
-                    onClick={() =>
-                      window.location.replace('/api/logout')
-                    }>
-                    Logout
-                  </DropdownMenu.Item>
-                </>
-              }>
-              <TopNav.Item>
-                <Avatar
-                  marginLeft="major-1"
-                  variant="circle"
-                  src={user.picture}
-                  alt={`Avatar of ${user.name}`}
-                  size="small"
-                />
-              </TopNav.Item>
-            </DropdownMenu>
-          </TopNav.Section>
-        </TopNav>
+        <TopNavigation
+          logoname={logoname}
+          hostname={hostname}
+          isAuthEnabled={isAuthEnabled}
+          isAuthenticated={isAuthenticated}
+        />
       }>
       <Container padding="major-3">
-        {canCreate && (
-          <Dialog.Modal
-            showCloseButton
-            title="Create Go Link"
-            {...createLinkModal}>
-            <CreateLinkForm
-              onSubmit={async (values, form) => {
-                try {
-                  await createLink({
-                    variables: values,
-                  });
+        <Stack>
+          <Set>
+            {canCreate && (
+              <Modal.State>
+                {(modal) => (
+                  <>
+                    <Dialog.Modal
+                      {...modal}
+                      baseId="create-link-modal"
+                      title="Create Link"
+                      standalone>
+                      <LinkForm.FormWrapper
+                        initialValues={undefined}
+                        onSubmit={async (values, form) => {
+                          await onCreateLink(values);
+                          modal.hide();
+                          form.resetForm();
+                        }}>
+                        <Dialog.Content>
+                          <Box>
+                            <Dialog.Header>
+                              <Dialog.Title>Create Link</Dialog.Title>
+                            </Dialog.Header>
+                            <FieldStack>
+                              <LinkForm.Fields />
+                            </FieldStack>
+                          </Box>
+                        </Dialog.Content>
+                        <Dialog.Footer justifyContent="flex-end">
+                          <Set>
+                            <Button type="reset" onClick={modal.hide}>
+                              Cancel
+                            </Button>
+                            <Button
+                              palette="primary"
+                              isLoading={
+                                createLinkStatus.loading ||
+                                allLinks.loading
+                              }
+                              type="submit">
+                              Create
+                            </Button>
+                          </Set>
+                        </Dialog.Footer>
+                      </LinkForm.FormWrapper>
+                    </Dialog.Modal>
+                    <Modal.Disclosure use={Button}>
+                      Create
+                    </Modal.Disclosure>
+                  </>
+                )}
+              </Modal.State>
+            )}
+          </Set>
 
-                  toasts.success({
-                    title: 'Link Created',
-                    message: 'Link was successfully created.',
-                  });
+          {allLinks.loading && <Loader />}
 
-                  createLinkModal.hide();
-                  form.resetForm();
-                  refetch();
-                } catch (e) {
-                  console.error(
-                    'Failed to create Link, details: ',
-                    e
-                  );
-                  toasts.danger({
-                    title: 'Failed to create Link',
-                    message: 'An unexpected error occurred.',
-                  });
-                }
-              }}
-            />
-          </Dialog.Modal>
-        )}
-
-        {loading && (
-          <Flex alignX="center">
-            <Spinner size="medium" />
-          </Flex>
-        )}
-
-        {data !== undefined && data !== null && (
-          <LinkTable
-            data={data}
-            isDeleteEnabled={canDelete}
-            isEditEnabled={canEdit}
-            onEdit={async (_linkId) => {
-              /** Open EditLinkForm with data prefilled. */
-            }}
-            onShare={async (linkUrl) => {
-              try {
-                await navigator.clipboard.writeText(linkUrl);
-
-                toasts.success({
-                  title: 'Link Copied',
-                  message: 'Link is in your clipboard.',
-                });
-              } catch (e) {
-                console.error('Failed to Copy Link, details: ', e);
-                toasts.danger({
-                  title: 'Failed to Copy Link',
-                  message: 'An unexpected error occurred.',
-                });
-              }
-            }}
-            onAnalytics={async (_linkId) => {
-              /** Open Analytics Modal */
-            }}
-            onDelete={async (linkId) => {
-              try {
-                await deleteLink({
-                  variables: {
-                    id: linkId,
-                  },
-                });
-
-                toasts.success({
-                  title: 'Link Deleted',
-                  message: 'Link was successfully deleted.',
-                });
-
-                refetch();
-              } catch (e) {
-                console.error('Failed to delete Link, details: ', e);
-                toasts.danger({
-                  title: 'Failed to delete Link',
-                  message: 'An unexpected error occurred.',
-                });
-              }
-            }}
-          />
-        )}
+          {allLinks.data !== undefined && allLinks.data !== null && (
+            <Suspense fallback={<Loader />}>
+              <LinkTable
+                data={allLinks.data}
+                isEditEnabled={canEdit}
+                isDeleteEnabled={canDelete}
+                onEdit={onEditLink}
+                onShare={onShareLink}
+                onDelete={onDeleteLink}
+                onAnalytics={onViewLinkAnalytics}
+              />
+            </Suspense>
+          )}
+        </Stack>
       </Container>
     </PageWithHeader>
   );
@@ -195,34 +223,22 @@ export default Index;
 export const getServerSideProps: GetServerSideProps = async (
   context
 ) => {
-  const { auth0, getPermissionsFromSession } = require('../lib/auth');
+  const { getUserClaimsFromRequest } = await import('../lib/auth');
+  const { Config } = await import("../lib/config");
   const request = context?.req as NextApiRequest;
-  const session = await auth0.getSession(request);
-  const grants = await getPermissionsFromSession(session);
-  const user = session?.user;
-  const logoname = process.env.LOGONAME;
-  const hostname = process.env.HOSTNAME;
-
-  if (user) {
-    return {
-      props: {
-        user,
-        grants,
-        logoname,
-        hostname,
-      },
-    };
-  }
-
-  const response = context?.res as NextApiResponse;
-
-  response.writeHead(302, {
-    Location: '/api/login',
-  });
-
-  response.end();
+  const { claims, user } = await getUserClaimsFromRequest(request);
+  const logoname = Config.metadata.logoname;
+  const hostname = Config.metadata.hostname;
+  const isAuthEnabled = Config.features.auth0;
+  const isAuthenticated = user !== null;
 
   return {
-    props: {},
+    props: {
+      claims,
+      logoname,
+      hostname,
+      isAuthEnabled,
+      isAuthenticated,
+    },
   };
 };

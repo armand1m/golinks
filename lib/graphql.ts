@@ -1,6 +1,7 @@
-import { postgraphile, PostGraphileOptions } from 'postgraphile';
-import { auth0, getPermissionsFromSession } from './auth';
 import { NextApiRequest } from 'next';
+import { postgraphile, PostGraphileOptions } from 'postgraphile';
+import { getUserClaimsFromRequest } from './auth';
+import { Config } from './config';
 
 const commonProperties: Partial<PostGraphileOptions> = {
   subscriptions: true,
@@ -8,21 +9,23 @@ const commonProperties: Partial<PostGraphileOptions> = {
   setofFunctionsContainNulls: false,
   ignoreRBAC: false,
   ignoreIndexes: false,
-  appendPlugins: [require('@graphile-contrib/pg-simplify-inflector')],
+  appendPlugins: [
+    require('@graphile-contrib/pg-simplify-inflector'),
+    require('postgraphile/plugins').TagsFilePlugin,
+  ],
   graphqlRoute: '/api/graphql',
   graphiqlRoute: '/api/graphiql',
   legacyRelations: 'omit',
   pgSettings: async (req) => {
-    const settings = {} as Record<string, any>;
-
-    const session = await auth0.getSession(req as NextApiRequest);
-    const claims = await getPermissionsFromSession(session);
-
-    settings['role'] = 'postgraphile';
-    settings['jwt.claims.roles'] = JSON.stringify(claims.roles);
-    settings['jwt.claims.permissions'] = JSON.stringify(
-      claims.permissions
+    const { claims } = await getUserClaimsFromRequest(
+      req as NextApiRequest
     );
+
+    const settings = {
+      role: 'postgraphile',
+      'jwt.claims.roles': JSON.stringify(claims.roles),
+      'jwt.claims.permissions': JSON.stringify(claims.permissions),
+    };
 
     return settings;
   },
@@ -52,10 +55,9 @@ const productionProperties: PostGraphileOptions = {
 };
 
 export const graphqlInstance = postgraphile(
-  process.env.DATABASE_CONNECTION_STRING ||
-    'postgres://dev:dev@localhost:5432/golinks',
-  process.env.DATABASE_SCHEMA || 'public',
-  process.env.NODE_ENV === 'production'
+  Config.database.connectionString,
+  Config.database.schema,
+  Config.environment === 'production'
     ? productionProperties
     : devProperties
 );
