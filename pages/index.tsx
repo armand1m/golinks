@@ -87,10 +87,6 @@ const Index: React.FC<Props> = ({
     /** Open EditLinkForm with data prefilled. */
   };
 
-  const onViewLinkAnalytics = async (_linkId: string) => {
-    /** Open Analytics Modal */
-  };
-
   const onShareLink = async (linkUrl: string) => {
     try {
       await navigator.clipboard.writeText(linkUrl);
@@ -208,7 +204,6 @@ const Index: React.FC<Props> = ({
                 onEdit={onEditLink}
                 onShare={onShareLink}
                 onDelete={onDeleteLink}
-                onAnalytics={onViewLinkAnalytics}
               />
             </Suspense>
           )}
@@ -224,7 +219,7 @@ export const getServerSideProps: GetServerSideProps = async (
   context
 ) => {
   const { getUserClaimsFromRequest } = await import('../lib/auth');
-  const { Config } = await import("../lib/config");
+  const { Config } = await import('../lib/config');
   const request = context?.req as NextApiRequest;
   const { claims, user } = await getUserClaimsFromRequest(request);
   const logoname = Config.metadata.logoname;

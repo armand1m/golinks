@@ -37,6 +37,7 @@ yarn-error.log*
 # graphql
 *.graphql.d.ts
 *.graphqls.d.ts
+__generated__
 
 # misc
 run-cloud.sh

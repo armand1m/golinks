@@ -18,3 +18,4 @@ run-cloud.sh
 docker-compose*
 ./.github
 ./.next
+./__generated__

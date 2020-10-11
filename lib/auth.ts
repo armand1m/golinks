@@ -1,4 +1,8 @@
-import { NextApiRequest } from 'next';
+import {
+  NextApiHandler,
+  NextApiRequest,
+  NextApiResponse,
+} from 'next';
 import { promisify } from 'util';
 import jsonwebtoken from 'jsonwebtoken';
 import jwksRsa from 'jwks-rsa';
@@ -168,3 +172,21 @@ export const getAuth0 = () => {
 };
 
 export type { IClaims } from '@auth0/nextjs-auth0/dist/session/session';
+
+export const withAuthentication = (handler: NextApiHandler) => async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    if (!Config.features.auth0) {
+      return res.status(503).json({
+        message: 'Authentication is disabled in this application.',
+      });
+    }
+
+    await handler(req, res);
+  } catch (error) {
+    console.error(error);
+    res.status(error.status || 500).end(error.message);
+  }
+};

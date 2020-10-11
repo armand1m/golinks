@@ -12,22 +12,20 @@ import { LinkMetricUsageGraph } from '../LinkMetricUsageGraph';
 
 interface Props {
   data: GetAllLinksQuery;
-  isDeleteEnabled: boolean;
   isEditEnabled: boolean;
-  onDelete: (linkId: string) => void | Promise<void>;
-  onShare: (linkUrl: string) => void | Promise<void>;
-  onAnalytics: (linkId: string) => void | Promise<void>;
+  isDeleteEnabled: boolean;
   onEdit: (linkId: string) => void | Promise<void>;
+  onShare: (linkUrl: string) => void | Promise<void>;
+  onDelete: (linkId: string) => void | Promise<void>;
 }
 
 export const LinkTable: React.FC<Props> = ({
   data,
-  isDeleteEnabled,
   isEditEnabled,
-  onDelete,
+  isDeleteEnabled,
   onEdit,
   onShare,
-  onAnalytics,
+  onDelete,
 }) => {
   const links = data?.links;
 
@@ -84,12 +82,14 @@ export const LinkTable: React.FC<Props> = ({
                 <DropdownMenu
                   menu={
                     <>
-                      <DropdownMenu.Item
-                        disabled={!isEditEnabled}
-                        iconBefore="solid-edit"
-                        onClick={() => onEdit(link.id)}>
-                        Edit
-                      </DropdownMenu.Item>
+                      {isEditEnabled && (
+                        <DropdownMenu.Item
+                          disabled={!isEditEnabled}
+                          iconBefore="solid-edit"
+                          onClick={() => onEdit(link.id)}>
+                          Edit
+                        </DropdownMenu.Item>
+                      )}
                       <DropdownMenu.Item
                         iconBefore="solid-share"
                         onClick={() => {
@@ -101,20 +101,17 @@ export const LinkTable: React.FC<Props> = ({
                         }}>
                         Share
                       </DropdownMenu.Item>
-                      <DropdownMenu.Item
-                        iconBefore="solid-chart-bar"
-                        onClick={() => onAnalytics(link.id)}>
-                        Analytics
-                      </DropdownMenu.Item>
-                      <DropdownMenu.Item
-                        disabled={!isDeleteEnabled}
-                        iconBefore="solid-trash-alt"
-                        color="danger"
-                        onClick={() => {
-                          onDelete(link.id);
-                        }}>
-                        Delete
-                      </DropdownMenu.Item>
+                      {isDeleteEnabled && (
+                        <DropdownMenu.Item
+                          disabled={!isDeleteEnabled}
+                          iconBefore="solid-trash-alt"
+                          color="danger"
+                          onClick={() => {
+                            onDelete(link.id);
+                          }}>
+                          Delete
+                        </DropdownMenu.Item>
+                      )}
                     </>
                   }>
                   <Button size="small">

@@ -4,4 +4,5 @@ plugins:
   - typescript
   - typescript-operations
   - typescript-react-apollo
+cacheDir: __generated__
 respectGitIgnore: true
