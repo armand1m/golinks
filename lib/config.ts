@@ -47,6 +47,12 @@ const ConfigSchema = Yup.object({
     hostname: Yup.string().required(
       createErrorMessageForRequiredEnv('HOSTNAME')
     ),
+    proto: Yup.string()
+      .oneOf(['http', 'https'])
+      .required(
+        createErrorMessageForRequiredEnv('PROTO', ['http', 'https'])
+      ),
+    baseUrl: Yup.string().required(),
   }).required(),
   anonymous: Yup.object({
     permissions: Yup.array<UserPermission>().required(),
@@ -104,6 +110,7 @@ const ConfigSchema = Yup.object({
 
 const createConfig = () => {
   const {
+    PROTO,
     LOGONAME,
     HOSTNAME,
     AUTH0_DOMAIN,
@@ -141,6 +148,8 @@ const createConfig = () => {
     metadata: {
       logoname: LOGONAME,
       hostname: HOSTNAME,
+      proto: PROTO,
+      baseUrl: `${PROTO}://${HOSTNAME}`,
     },
     anonymous: {
       permissions: ANONYMOUS_PERMISSIONS,

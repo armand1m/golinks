@@ -12,6 +12,7 @@ import { LinkMetricUsageGraph } from '../LinkMetricUsageGraph';
 
 interface Props {
   data: GetAllLinksQuery;
+  baseUrl: string;
   isEditEnabled: boolean;
   isDeleteEnabled: boolean;
   onEdit: (linkId: string) => void | Promise<void>;
@@ -21,6 +22,7 @@ interface Props {
 
 export const LinkTable: React.FC<Props> = ({
   data,
+  baseUrl,
   isEditEnabled,
   isDeleteEnabled,
   onEdit,
@@ -56,7 +58,19 @@ export const LinkTable: React.FC<Props> = ({
         <>
           {links?.nodes.map((link) => (
             <Table.Row key={link.id}>
-              <Table.Cell>{link.alias}</Table.Cell>
+              <Table.Cell>
+                <FannyLink
+                  href={new URL(link.alias, baseUrl).href}
+                  style={{
+                    display: 'block',
+                    maxWidth: '350px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                  {link.alias}
+                </FannyLink>
+              </Table.Cell>
               <Table.Cell>
                 <FannyLink
                   href={link.url}

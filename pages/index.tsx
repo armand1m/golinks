@@ -29,7 +29,7 @@ const LinkTable = lazy(() => import('../components/LinkTable'));
 
 interface Props {
   logoname: string;
-  hostname: string;
+  baseUrl: string;
   isAuthEnabled: boolean;
   isAuthenticated: boolean;
   claims: {
@@ -45,7 +45,7 @@ const Loader = () => (
 
 const Index: React.FC<Props> = ({
   logoname,
-  hostname,
+  baseUrl,
   claims,
   isAuthEnabled,
   isAuthenticated,
@@ -135,7 +135,7 @@ const Index: React.FC<Props> = ({
       header={
         <TopNavigation
           logoname={logoname}
-          hostname={hostname}
+          baseUrl={baseUrl}
           isAuthEnabled={isAuthEnabled}
           isAuthenticated={isAuthenticated}
         />
@@ -201,6 +201,7 @@ const Index: React.FC<Props> = ({
           {allLinks.data !== undefined && allLinks.data !== null && (
             <Suspense fallback={<Loader />}>
               <LinkTable
+                baseUrl={baseUrl}
                 data={allLinks.data}
                 isEditEnabled={canEdit}
                 isDeleteEnabled={canDelete}
@@ -218,7 +219,7 @@ const Index: React.FC<Props> = ({
 
 export default Index;
 
-export const getServerSideProps: GetServerSideProps = async (
+export const getServerSideProps: GetServerSideProps<Props> = async (
   context
 ) => {
   const { getUserClaimsFromRequest } = await import('../lib/auth');
@@ -226,7 +227,7 @@ export const getServerSideProps: GetServerSideProps = async (
   const request = context?.req as NextApiRequest;
   const { claims, user } = await getUserClaimsFromRequest(request);
   const logoname = Config.metadata.logoname;
-  const hostname = Config.metadata.hostname;
+  const baseUrl = Config.metadata.baseUrl;
   const isAuthEnabled = Config.features.auth0;
   const isAuthenticated = user !== null;
 
@@ -234,7 +235,7 @@ export const getServerSideProps: GetServerSideProps = async (
     props: {
       claims,
       logoname,
-      hostname,
+      baseUrl,
       isAuthEnabled,
       isAuthenticated,
     },

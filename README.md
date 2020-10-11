@@ -120,7 +120,8 @@ Export needed environment variables for `envsubst`:
 export GOOGLE_CLOUD_PROJECT=<gcp-project>
 export GOOGLE_CLOUD_REGION=<gcp-region>
 export CLOUDSQL_INSTANCE_NAME=<cloud-sql-instance-name>
-export HOSTNAME=https://go.mydomain.com
+export HOSTNAME=go.mydomain.com
+export PROTO=https
 export LOGONAME=golinks
 export AUHT0_ENABLED=true
 export AUTH0_DOMAIN=<auth0-domain>
@@ -264,7 +265,8 @@ DATABASE_CONNECTION_STRING=postgres://dev:dev@127.0.0.1:5432/golinks
 DATABASE_SCHEMA=public
 NODE_ENV=development
 AUTH0_ENABLED=false
-HOSTNAME=http://localhost:3000
+PROTO=http
+HOSTNAME=localhost:3000
 LOGONAME=go.localhost
 EOL
 ```
@@ -293,7 +295,8 @@ AUTH0_COOKIE_SECRET=<auth0-cookie-secret>
 AUTH0_COOKIE_DOMAIN=localhost
 AUTH0_REDIRECT_URL=http://localhost:3000/api/callback
 AUTH0_POST_LOGOUT_REDIRECT_URL=http://localhost:3000
-HOSTNAME=http://localhost:3000
+HOSTNAME=localhost:3000
+PROTO=http
 LOGONAME=go.mydomain.dev
 EOL
 
@@ -319,7 +322,8 @@ AUTH0_COOKIE_SECRET=<auth0-cookie-secret>
 AUTH0_COOKIE_DOMAIN=localhost
 AUTH0_REDIRECT_URL=http://localhost:3000/api/callback
 AUTH0_POST_LOGOUT_REDIRECT_URL=http://localhost:3000
-HOSTNAME=http://localhost:3000
+HOSTNAME=localhost:3000
+PROTO=http
 LOGONAME=go.mydomain.dev
 EOL
 

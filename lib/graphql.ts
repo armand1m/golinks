@@ -16,6 +16,7 @@ const commonProperties: Partial<PostGraphileOptions> = {
   graphqlRoute: '/api/graphql',
   graphiqlRoute: '/api/graphiql',
   legacyRelations: 'omit',
+  enableQueryBatching: true,
   pgSettings: async (req) => {
     const { claims } = await getUserClaimsFromRequest(
       req as NextApiRequest
@@ -41,7 +42,6 @@ const devProperties: PostGraphileOptions = {
   allowExplain(_req) {
     return true;
   },
-  enableQueryBatching: true,
   exportGqlSchemaPath: './lib/type-defs.graphqls',
 };
 
@@ -50,7 +50,6 @@ const productionProperties: PostGraphileOptions = {
   retryOnInitFail: true,
   extendedErrors: ['errcode'],
   graphiql: false,
-  enableQueryBatching: true,
   disableQueryLog: true,
 };
 
