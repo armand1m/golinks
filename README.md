@@ -240,7 +240,7 @@ Regenerate the `./lib/type-defs.graphqls` with:
 
 ```sh
 npx postgraphile \
-  --connection 'postgres://dev:dev@localhost:5432/golinks' \
+  --connection 'postgres://dev:dev@127.0.0.1:5432/golinks' \
   --schema public \
   --export-schema-graphql ./lib/type-defs.graphqls \
   --subscriptions \
@@ -260,12 +260,12 @@ Create an `.env.local` file (with auth0 disabled):
 
 ```sh
 cat > ./.env.local <<EOL
-DATABASE_CONNECTION_STRING=postgres://dev:dev@db:5432/golinks
+DATABASE_CONNECTION_STRING=postgres://dev:dev@127.0.0.1:5432/golinks
 DATABASE_SCHEMA=public
 NODE_ENV=development
 AUTH0_ENABLED=false
 HOSTNAME=http://localhost:3000
-LOGONAME=go.mydomain.dev
+LOGONAME=go.localhost
 EOL
 ```
 Download dependencies and run in development mode:
