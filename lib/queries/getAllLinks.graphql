@@ -1,5 +1,5 @@
 query getAllLinks {
-  links {
+  links(orderBy: ALIAS_ASC) {
     nodes {
       id
       url
