@@ -29,6 +29,13 @@ Please check the [Related](#related) section to have a glance on how other compa
  - [The quick and simple guide to go links](https://www.trot.to/go-links)
  - [Google's go link culture](https://yiou.me/blog/posts/google-go-link)
 
+## Other implementations
+ 
+ - Open Source: [github/kellegous/go](https://github.com/kellegous/go)
+ - Open Source/Freemium: [trot.to](https://www.trot.to/)
+ - Freemium: [goatcodes.com](https://goatcodes.com/)
+ - Freemium: [golinks.io](https://golinks.io)
+
 ## Feature Checklist
 
 These are just a few ideas that come in my mind.
