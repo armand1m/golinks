@@ -4,7 +4,7 @@ import { Formik, Form, Field, FormikHelpers } from 'formik';
 
 const CreateLinkSchema = Yup.object().shape({
   alias: Yup.string()
-    .matches(/^[a-z0-9]+$/i)
+    .matches(/^[a-z0-9//]+$/i)
     .max(24, 'Too long for an alias.')
     .required('An alias is required.'),
   url: Yup.string()

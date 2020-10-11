@@ -56,47 +56,6 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: link_usage_metrics; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.link_usage_metrics (
-    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
-    link_id uuid NOT NULL,
-    accessed_at timestamp without time zone DEFAULT now() NOT NULL
-);
-
-ALTER TABLE ONLY public.link_usage_metrics FORCE ROW LEVEL SECURITY;
-
-
---
--- Name: TABLE link_usage_metrics; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON TABLE public.link_usage_metrics IS 'A link usage metric posted by the application when a link is accessed.';
-
-
---
--- Name: COLUMN link_usage_metrics.id; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON COLUMN public.link_usage_metrics.id IS 'The id for this metric record.';
-
-
---
--- Name: COLUMN link_usage_metrics.link_id; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON COLUMN public.link_usage_metrics.link_id IS 'The id of the link being accessed.';
-
-
---
--- Name: COLUMN link_usage_metrics.accessed_at; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON COLUMN public.link_usage_metrics.accessed_at IS 'The time this link was accessed.';
-
-
---
 -- Name: links; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -143,6 +102,62 @@ COMMENT ON COLUMN public.links.url IS 'The link alias url.';
 --
 
 COMMENT ON COLUMN public.links.created_at IS 'The time this link alias was created.';
+
+
+--
+-- Name: search_links(text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.search_links(search text) RETURNS SETOF public.links
+    LANGUAGE sql STABLE
+    AS $$
+    select *
+    from public.links
+    where
+      url ilike ('%' || search || '%') or
+      alias ilike ('%' || search || '%')
+  $$;
+
+
+--
+-- Name: link_usage_metrics; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.link_usage_metrics (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    link_id uuid NOT NULL,
+    accessed_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+ALTER TABLE ONLY public.link_usage_metrics FORCE ROW LEVEL SECURITY;
+
+
+--
+-- Name: TABLE link_usage_metrics; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.link_usage_metrics IS 'A link usage metric posted by the application when a link is accessed.';
+
+
+--
+-- Name: COLUMN link_usage_metrics.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.link_usage_metrics.id IS 'The id for this metric record.';
+
+
+--
+-- Name: COLUMN link_usage_metrics.link_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.link_usage_metrics.link_id IS 'The id of the link being accessed.';
+
+
+--
+-- Name: COLUMN link_usage_metrics.accessed_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.link_usage_metrics.accessed_at IS 'The time this link was accessed.';
 
 
 --
@@ -273,4 +288,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20200927100746'),
     ('20200927101112'),
     ('20200927101300'),
-    ('20200927232549');
+    ('20200927232549'),
+    ('20201011103804');

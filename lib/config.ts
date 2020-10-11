@@ -54,7 +54,10 @@ const ConfigSchema = Yup.object({
   }).required(),
   features: Yup.object({
     auth0: Yup.boolean().required(
-      createErrorMessageForRequiredEnv('AUTH0_ENABLED')
+      createErrorMessageForRequiredEnv('AUTH0_ENABLED', [
+        'true',
+        'false',
+      ])
     ),
   }).required(),
   auth0: Yup.object<Auth0Props>().when('features.auth0', {
@@ -100,26 +103,25 @@ const ConfigSchema = Yup.object({
 }).required();
 
 const createConfig = () => {
-  const LOGONAME = process.env.LOGONAME;
-  const HOSTNAME = process.env.HOSTNAME;
-  const AUTH0_ENABLED = Boolean(process.env.AUTH0_ENABLED);
-  const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
-  const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE;
-  const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
-  const AUTH0_CLIENT_SECRET = process.env.AUTH0_CLIENT_SECRET;
-  const AUTH0_COOKIE_DOMAIN = process.env.AUTH0_COOKIE_DOMAIN;
-  const AUTH0_COOKIE_SECRET = process.env.AUTH0_COOKIE_SECRET;
-  const AUTH0_REDIRECT_URL = process.env.AUTH0_REDIRECT_URL;
-  const AUTH0_POST_LOGOUT_REDIRECT_URL =
-    process.env.AUTH0_POST_LOGOUT_REDIRECT_URL;
+  const {
+    LOGONAME,
+    HOSTNAME,
+    AUTH0_DOMAIN,
+    AUTH0_AUDIENCE,
+    AUTH0_CLIENT_ID,
+    AUTH0_CLIENT_SECRET,
+    AUTH0_COOKIE_DOMAIN,
+    AUTH0_COOKIE_SECRET,
+    AUTH0_REDIRECT_URL,
+    AUTH0_POST_LOGOUT_REDIRECT_URL,
+    DATABASE_CONNECTION_STRING,
+    DATABASE_SCHEMA,
+    NODE_ENV,
+  } = process.env;
 
-  const DATABASE_CONNECTION_STRING =
-    process.env.DATABASE_CONNECTION_STRING;
-  const DATABASE_SCHEMA = process.env.DATABASE_SCHEMA;
+  const AUTH0_ENABLED = process.env.AUTH0_ENABLED === 'true';
   const ENVIRONMENT =
-    process.env.NODE_ENV === 'production'
-      ? 'production'
-      : 'development';
+    NODE_ENV === 'production' ? 'production' : 'development';
 
   const ANONYMOUS_PERMISSIONS = AUTH0_ENABLED
     ? [UserPermission.ReadLink]
@@ -134,7 +136,7 @@ const createConfig = () => {
     ? [UserRole.Viewer]
     : [UserRole.Viewer, UserRole.Editor];
 
-  const config = {
+  const unsafeConfig = {
     environment: ENVIRONMENT,
     metadata: {
       logoname: LOGONAME,
@@ -165,11 +167,11 @@ const createConfig = () => {
     },
   };
 
-  const validatedConfig = ConfigSchema.validateSync(config, {
+  const safeConfig = ConfigSchema.validateSync(unsafeConfig, {
     abortEarly: false,
   });
 
-  return validatedConfig;
+  return safeConfig;
 };
 
 export const Config = createConfig();
