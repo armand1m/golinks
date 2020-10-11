@@ -6,7 +6,10 @@ import {
   useGetLinkByAliasQuery,
   GetLinkByAliasDocument,
 } from '../lib/queries/getLinkByAlias.graphql';
-import { useCreateLinkUsageMetricMutation } from '../lib/mutations/createLinkUsageMetric.graphql';
+import {
+  useCreateLinkUsageMetricMutation,
+  CreateLinkUsageMetricDocument,
+} from '../lib/mutations/createLinkUsageMetric.graphql';
 
 interface RedirectProps {
   alias: string;
@@ -62,7 +65,7 @@ const useLinkRedirect = ({ alias }: RedirectProps) => {
         },
       });
 
-      // window.location.replace(data.linkByAlias.url);
+      window.location.replace(data.linkByAlias.url);
     }
   }, [data]);
 
@@ -101,14 +104,24 @@ export const getServerSideProps: GetServerSideProps = async (
   const alias = (context.query.alias as string[]).join('/');
   const apolloClient = initializeApollo(undefined);
 
-  const result = await apolloClient.query({
+  const queryResult = await apolloClient.query({
     query: GetLinkByAliasDocument,
     variables: {
-      alias: 'lol',
+      alias,
     },
   });
 
-  console.log(result);
+  console.log(queryResult);
+
+  if (queryResult.data.linkByAlias) {
+    const mutationResult = await apolloClient.mutate({
+      mutation: CreateLinkUsageMetricDocument,
+      variables: {
+        linkId: queryResult.data.linkByAlias.id,
+      },
+    });
+    console.log(mutationResult);
+  }
 
   return {
     props: {
