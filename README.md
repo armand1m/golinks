@@ -49,7 +49,7 @@ Contributions for the following are very welcome.
 - [x] Link Suggestion on 404
 - [x] Link Usage Metrics
   - [x] Number: Usage Total Count
-  - [x] Graph: Usage of last 14 days
+  - [x] Graph: Usage of last 31 days
 - [ ] Link Ownership
 - [ ] Link Parameters
 - [ ] Link Groups (Folders)
