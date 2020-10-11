@@ -25,72 +25,85 @@ import {
 } from '../lib/queries/searchLinks.graphql';
 import { NotFoundAnimation } from '../components/NotFoundAnimation';
 
-interface LinkNotFoundProps {
+interface Props {
+  hostname: string;
   similarLinks: SearchLinksQuery['searchLinks']['nodes'];
 }
 
-const LinkNotFound: React.FC<LinkNotFoundProps> = ({
+const LinkNotFound: React.FC<Props> = ({
+  hostname,
   similarLinks,
-}) => {
-  return (
-    <PageContent>
-      <Flex
-        flexDirection="column"
-        textAlign="center"
-        justifyContent="center"
-        alignItems="center">
-        <Stack>
-          <Heading>Nothing here.</Heading>
+}) => (
+  <PageContent>
+    <Flex
+      flexDirection="column"
+      textAlign="center"
+      justifyContent="center"
+      alignItems="center">
+      <Stack>
+        <Heading>Nothing here.</Heading>
 
-          <NotFoundAnimation />
+        <NotFoundAnimation />
 
-          {similarLinks.length !== 0 && (
-            <>
-              <Heading use="h3">But there are other options:</Heading>
+        {similarLinks.length !== 0 && (
+          <>
+            <Heading use="h3">But there are other options:</Heading>
 
-              <Table isResponsive responsiveBreakpoint="tablet">
-                <Table.Head>
-                  <Table.Row>
-                    <Table.HeadCell>Alias</Table.HeadCell>
-                    <Table.HeadCell>Destination</Table.HeadCell>
-                  </Table.Row>
-                </Table.Head>
-                <Table.Body>
-                  <>
-                    {similarLinks.map((link) => (
-                      <Table.Row key={link.id}>
-                        <Table.Cell>{link.alias}</Table.Cell>
-                        <Table.Cell>
-                          <Link
-                            href={link.url}
-                            style={{
-                              display: 'block',
-                              maxWidth: '350px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}>
-                            {link.url}
-                          </Link>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </>
-                </Table.Body>
-              </Table>
-            </>
-          )}
-        </Stack>
-      </Flex>
-    </PageContent>
-  );
-};
+            <Table isResponsive responsiveBreakpoint="tablet">
+              <Table.Head>
+                <Table.Row>
+                  <Table.HeadCell>Alias</Table.HeadCell>
+                  <Table.HeadCell>Destination</Table.HeadCell>
+                </Table.Row>
+              </Table.Head>
+              <Table.Body>
+                <>
+                  {similarLinks.map((link) => (
+                    <Table.Row key={link.id}>
+                      <Table.Cell>
+                        <Link
+                          href={new URL(link.alias, hostname).href}
+                          style={{
+                            display: 'block',
+                            maxWidth: '350px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}>
+                          {link.alias}
+                        </Link>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Link
+                          href={link.url}
+                          style={{
+                            display: 'block',
+                            maxWidth: '350px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}>
+                          {link.url}
+                        </Link>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </>
+              </Table.Body>
+            </Table>
+          </>
+        )}
+      </Stack>
+    </Flex>
+  </PageContent>
+);
 
 export default LinkNotFound;
 
 export const getServerSideProps: GetServerSideProps = async (
   context
 ) => {
+  const { Config } = await import('../lib/config');
   const { initializeApollo } = await import('../lib/apollo');
   const alias = (context.query.alias as string[]).join('/');
   const apolloClient = initializeApollo();
@@ -118,6 +131,7 @@ export const getServerSideProps: GetServerSideProps = async (
 
     return {
       props: {
+        hostname: Config.metadata.hostname,
         similarLinks: searchResults.data.searchLinks.nodes,
       },
     };
@@ -150,6 +164,7 @@ export const getServerSideProps: GetServerSideProps = async (
    **/
   return {
     props: {
+      hostname: Config.metadata.hostname,
       similarLinks: [],
     },
   };

@@ -179,8 +179,9 @@ export const withAuthentication = (handler: NextApiHandler) => async (
 ) => {
   try {
     if (!Config.features.auth0) {
-      return res.status(503).json({
-        message: 'Authentication is disabled in this application.',
+      return res.status(501).json({
+        message:
+          'Authentication is disabled in this application deployment.',
       });
     }
 
