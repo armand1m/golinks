@@ -1,5 +1,17 @@
 # golinks
 
+<div style="max-width: 700px">
+  <img src="./.github/mainpage.png?raw=true">
+</div>
+
+**Mainpage**
+
+<div style="max-width: 700px">
+  <img src="./.github/404.png?raw=true">
+</div>
+
+**404 with Link suggestions**
+
 This application is deployed at https://go.d1m.dev. Signup is enabled for view only mode.
 
 This is an implementation of Go Links powered by [Next.js](https://nextjs.org/), [GraphQL](http://graphql.org/) through [PostGraphile](https://www.graphile.org/postgraphile/) and [Auth0](https://www.auth0.com).
@@ -7,10 +19,6 @@ This is an implementation of Go Links powered by [Next.js](https://nextjs.org/),
 In short, Go Links are a type of URL Shorteners. You can create an alias that points to an URL and will redirect the user to that URL.
 
 Please check the [Related](#related) section to have a glance on how other companies and universities leverage go links.
-
-<div style="max-width: 700px">
-  <img src="./.github/mainpage.png?raw=true">
-</div>
 
 ## Related
 
@@ -38,13 +46,15 @@ Contributions for the following are very welcome.
 - [x] Security
   - [x] Row Level Security using Auth0 Roles and Permissions
 - [ ] Link Description
-- [ ] Link Suggestion on 404
+- [x] Link Suggestion on 404
 - [x] Link Usage Metrics
   - [x] Number: Usage Total Count
   - [x] Graph: Usage of last 14 days
 - [ ] Link Ownership
 - [ ] Link Parameters
-- [ ] Link Groups (Folders)
+- [-] Link Groups (Folders)
+  - [x] URL: Accepts and can be redirected
+  - [ ] UI: Folds URL groups
 - [ ] Private Links
 - [ ] Temporary Links
 - [ ] Random Alias
