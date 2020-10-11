@@ -1,14 +1,14 @@
 import { TopNav, Heading, Button } from 'bumbag';
 
 interface Props {
-  hostname: string;
+  baseUrl: string;
   logoname: string;
   isAuthenticated: boolean;
   isAuthEnabled: boolean;
 }
 
 export const TopNavigation: React.FC<Props> = ({
-  hostname,
+  baseUrl,
   logoname,
   isAuthenticated,
   isAuthEnabled,
@@ -16,7 +16,7 @@ export const TopNavigation: React.FC<Props> = ({
   return (
     <TopNav>
       <TopNav.Section>
-        <TopNav.Item href={hostname} fontWeight="semibold">
+        <TopNav.Item href={baseUrl} fontWeight="semibold">
           <Heading use="h3">{logoname}</Heading>
         </TopNav.Item>
       </TopNav.Section>

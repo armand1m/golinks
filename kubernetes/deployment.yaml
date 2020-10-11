@@ -37,6 +37,8 @@ spec:
         ports:
         - containerPort: 3000
         env:
+        - name: PROTO
+          value: ${PROTO}
         - name: HOSTNAME
           value: ${HOSTNAME}
         - name: LOGONAME

@@ -1,13 +1,17 @@
-import { GetServerSideProps } from 'next';
+import React from 'react';
+import { GetServerSideProps, NextApiRequest } from 'next';
 import {
-  PageContent,
   Stack,
   Flex,
   Table,
   Link,
   Heading,
+  PageWithHeader,
+  Container,
 } from 'bumbag';
 
+import { NotFoundAnimation } from '../components/NotFoundAnimation';
+import { TopNavigation } from '../components/TopNavigation';
 import {
   GetLinkByAliasDocument,
   GetLinkByAliasQuery,
@@ -23,90 +27,126 @@ import {
   SearchLinksQuery,
   SearchLinksQueryVariables,
 } from '../lib/queries/searchLinks.graphql';
-import { NotFoundAnimation } from '../components/NotFoundAnimation';
 
 interface Props {
-  hostname: string;
+  alias: string;
+  baseUrl: string;
+  logoname: string;
+  isAuthEnabled: boolean;
+  isAuthenticated: boolean;
+  isMobile: boolean;
   similarLinks: SearchLinksQuery['searchLinks']['nodes'];
 }
 
 const LinkNotFound: React.FC<Props> = ({
-  hostname,
+  alias,
+  baseUrl,
+  logoname,
+  isMobile,
+  isAuthEnabled,
+  isAuthenticated,
   similarLinks,
 }) => (
-  <PageContent>
-    <Flex
-      flexDirection="column"
-      textAlign="center"
-      justifyContent="center"
-      alignItems="center">
-      <Stack>
-        <Heading>Nothing here.</Heading>
+  <PageWithHeader
+    header={
+      <TopNavigation
+        logoname={logoname}
+        baseUrl={baseUrl}
+        isAuthEnabled={isAuthEnabled}
+        isAuthenticated={isAuthenticated}
+      />
+    }>
+    <Container padding="major-3">
+      <Flex
+        flexDirection="column"
+        textAlign="center"
+        justifyContent="center"
+        alignItems="center">
+        <Stack>
+          <Heading>No link found at go/{alias}</Heading>
 
-        <NotFoundAnimation />
+          <NotFoundAnimation isMobile={isMobile} />
 
-        {similarLinks.length !== 0 && (
-          <>
-            <Heading use="h3">But there are other options:</Heading>
+          {similarLinks.length !== 0 && (
+            <>
+              <Heading use="h3">But there are other options:</Heading>
 
-            <Table isResponsive responsiveBreakpoint="tablet">
-              <Table.Head>
-                <Table.Row>
-                  <Table.HeadCell>Alias</Table.HeadCell>
-                  <Table.HeadCell>Destination</Table.HeadCell>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
-                <>
-                  {similarLinks.map((link) => (
-                    <Table.Row key={link.id}>
-                      <Table.Cell>
-                        <Link
-                          href={new URL(link.alias, hostname).href}
-                          style={{
-                            display: 'block',
-                            maxWidth: '350px',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}>
-                          {link.alias}
-                        </Link>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Link
-                          href={link.url}
-                          style={{
-                            display: 'block',
-                            maxWidth: '350px',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}>
-                          {link.url}
-                        </Link>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
-                </>
-              </Table.Body>
-            </Table>
-          </>
-        )}
-      </Stack>
-    </Flex>
-  </PageContent>
+              <Table isResponsive responsiveBreakpoint="tablet">
+                <Table.Head>
+                  <Table.Row>
+                    <Table.HeadCell>Alias</Table.HeadCell>
+                    <Table.HeadCell>Destination</Table.HeadCell>
+                  </Table.Row>
+                </Table.Head>
+                <Table.Body>
+                  <>
+                    {similarLinks.map((link) => (
+                      <Table.Row key={link.id}>
+                        <Table.Cell>
+                          <Link
+                            href={new URL(link.alias, baseUrl).href}
+                            style={{
+                              display: 'block',
+                              maxWidth: '350px',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}>
+                            {link.alias}
+                          </Link>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Link
+                            href={link.url}
+                            style={{
+                              display: 'block',
+                              maxWidth: '350px',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}>
+                            {link.url}
+                          </Link>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </>
+                </Table.Body>
+              </Table>
+            </>
+          )}
+        </Stack>
+      </Flex>
+    </Container>
+  </PageWithHeader>
 );
 
 export default LinkNotFound;
 
-export const getServerSideProps: GetServerSideProps = async (
+export const getServerSideProps: GetServerSideProps<Props> = async (
   context
 ) => {
   const { Config } = await import('../lib/config');
+  const { getUserClaimsFromRequest } = await import('../lib/auth');
   const { initializeApollo } = await import('../lib/apollo');
-  const alias = (context.query.alias as string[]).join('/');
+  const { user } = await getUserClaimsFromRequest(
+    context?.req as NextApiRequest
+  );
   const apolloClient = initializeApollo();
+
+  const alias = (context.query.alias as string[]).join('/');
+  const logoname = Config.metadata.logoname;
+  const baseUrl = Config.metadata.baseUrl;
+  const isAuthEnabled = Config.features.auth0;
+  const isAuthenticated = user !== null;
+  const userAgent = context.req.headers['user-agent'];
+  const isMobile = userAgent
+    ? Boolean(
+        userAgent.match(
+          /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i
+        )
+      )
+    : false;
 
   const queryResult = await apolloClient.query<
     GetLinkByAliasQuery,
@@ -118,7 +158,9 @@ export const getServerSideProps: GetServerSideProps = async (
     },
   });
 
-  if (!queryResult.data.linkByAlias) {
+  const link = queryResult.data.linkByAlias;
+
+  if (!link) {
     const searchResults = await apolloClient.query<
       SearchLinksQuery,
       SearchLinksQueryVariables
@@ -129,42 +171,66 @@ export const getServerSideProps: GetServerSideProps = async (
       },
     });
 
+    const similarLinks = searchResults.data.searchLinks.nodes;
+
     return {
       props: {
-        hostname: Config.metadata.hostname,
-        similarLinks: searchResults.data.searchLinks.nodes,
+        alias,
+        baseUrl,
+        logoname,
+        isMobile,
+        isAuthEnabled,
+        isAuthenticated,
+        similarLinks,
       },
     };
   }
 
   /**
-   * Trigger metric update and forget it.
+   * Trigger metric update and forget about it.
    */
-  apolloClient.mutate<
-    CreateLinkUsageMetricMutation,
-    CreateLinkUsageMetricMutationVariables
-  >({
-    mutation: CreateLinkUsageMetricDocument,
-    variables: {
-      linkId: queryResult.data.linkByAlias.id,
-    },
-  });
+  apolloClient
+    .mutate<
+      CreateLinkUsageMetricMutation,
+      CreateLinkUsageMetricMutationVariables
+    >({
+      mutation: CreateLinkUsageMetricDocument,
+      variables: {
+        linkId: link.id,
+      },
+    })
+    .then(() => {
+      console.log(
+        `[info:metric]: Added metric to link with alias "${link.alias}"`
+      );
+    })
+    .catch((err) => {
+      console.error(
+        `[error:metric]: Failed to add metric for link with alias "${link.alias}"`
+      );
+      console.error(err);
+    });
 
   const response = context.res;
 
   response.writeHead(302, {
-    Location: queryResult.data.linkByAlias.url,
+    Location: link.url,
   });
 
   response.end();
 
   /**
-   * This line doesn't do anything actually.
+   * This return doesn't do anything actually.
    * The request is already ended at this point.
    **/
   return {
     props: {
-      hostname: Config.metadata.hostname,
+      alias,
+      baseUrl,
+      logoname,
+      isMobile,
+      isAuthEnabled,
+      isAuthenticated,
       similarLinks: [],
     },
   };

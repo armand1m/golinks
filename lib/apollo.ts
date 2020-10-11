@@ -19,7 +19,7 @@ function createIsomorphicLink() {
 
   if (typeof window === 'undefined') {
     const { Config } = require('./config');
-    uri = new URL('/api/graphql', Config.metadata.hostname).href;
+    uri = new URL('/api/graphql', Config.metadata.baseUrl).href;
   } else {
     uri = '/api/graphql';
   }

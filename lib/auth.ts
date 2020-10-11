@@ -66,7 +66,10 @@ export const getPermissionsFromSession = async (
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: `https://${Config.auth0.domain}/.well-known/jwks.json`,
+    jwksUri: new URL(
+      '/.well-known/jwks.json',
+      `https://${Config.auth0.domain}`
+    ).href,
   });
 
   const signingKey = await promisify(jwksSecretClient.getSigningKey)(
