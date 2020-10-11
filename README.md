@@ -52,8 +52,8 @@ Contributions for the following are very welcome.
   - [x] Graph: Usage of last 14 days
 - [ ] Link Ownership
 - [ ] Link Parameters
-- [-] Link Groups (Folders)
-  - [x] URL: Accepts and can be redirected
+- [ ] Link Groups (Folders)
+  - [x] URL: Accept `/` and can be redirected
   - [ ] UI: Folds URL groups
 - [ ] Private Links
 - [ ] Temporary Links
