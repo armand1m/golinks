@@ -1,131 +1,156 @@
 import { GetServerSideProps } from 'next';
-import { useEffect, useCallback } from 'react';
-import { PageContent, Heading, Text, Flex, Spinner } from 'bumbag';
+import {
+  PageContent,
+  Stack,
+  Flex,
+  Table,
+  Link,
+  Heading,
+} from 'bumbag';
 
 import {
-  useGetLinkByAliasQuery,
   GetLinkByAliasDocument,
+  GetLinkByAliasQuery,
+  GetLinkByAliasQueryVariables,
 } from '../lib/queries/getLinkByAlias.graphql';
 import {
-  useCreateLinkUsageMetricMutation,
   CreateLinkUsageMetricDocument,
+  CreateLinkUsageMetricMutation,
+  CreateLinkUsageMetricMutationVariables,
 } from '../lib/mutations/createLinkUsageMetric.graphql';
+import {
+  SearchLinksDocument,
+  SearchLinksQuery,
+  SearchLinksQueryVariables,
+} from '../lib/queries/searchLinks.graphql';
+import { NotFoundAnimation } from '../components/NotFoundAnimation';
 
-interface RedirectProps {
-  alias: string;
+interface LinkNotFoundProps {
+  similarLinks: SearchLinksQuery['searchLinks']['nodes'];
 }
 
-const LinkNotFound: React.FC = () => {
-  return (
-    <Flex
-      flexDirection="column"
-      textAlign="center"
-      justifyContent="center"
-      alignItems="center">
-      <Heading>Nope :(</Heading>
-      <Text>This link is a dead end.</Text>
-    </Flex>
-  );
-};
-
-const Loader: React.FC = () => {
-  return (
-    <Flex alignX="center">
-      <Spinner size="medium" />
-    </Flex>
-  );
-};
-
-const LinkRedirecting: React.FC = () => {
-  return (
-    <Flex
-      flexDirection="column"
-      textAlign="center"
-      justifyContent="center"
-      alignItems="center">
-      <Heading>Yay! Hang in there..</Heading>
-      <Text>You'll be redirected in a moment.</Text>
-    </Flex>
-  );
-};
-
-const useLinkRedirect = ({ alias }: RedirectProps) => {
-  const [createLinkMetric] = useCreateLinkUsageMetricMutation();
-  const { data, loading } = useGetLinkByAliasQuery({
-    variables: {
-      alias,
-    },
-  });
-
-  const updateAndRedirect = useCallback(async () => {
-    if (data?.linkByAlias) {
-      await createLinkMetric({
-        variables: {
-          linkId: data.linkByAlias.id,
-        },
-      });
-
-      window.location.replace(data.linkByAlias.url);
-    }
-  }, [data]);
-
-  useEffect(() => {
-    updateAndRedirect();
-  }, [data]);
-
-  const notFound = loading === false && data?.linkByAlias === null;
-  const found = loading === false && data?.linkByAlias;
-
-  return {
-    loading,
-    notFound,
-    found,
-  };
-};
-
-const Redirect: React.FC<RedirectProps> = ({ alias }) => {
-  const { loading, notFound, found } = useLinkRedirect({ alias });
-
+const LinkNotFound: React.FC<LinkNotFoundProps> = ({
+  similarLinks,
+}) => {
   return (
     <PageContent>
-      {loading && <Loader />}
-      {notFound && <LinkNotFound />}
-      {found && <LinkRedirecting />}
+      <Flex
+        flexDirection="column"
+        textAlign="center"
+        justifyContent="center"
+        alignItems="center">
+        <Stack>
+          <Heading>Nothing here.</Heading>
+
+          <NotFoundAnimation />
+
+          {similarLinks.length !== 0 && (
+            <>
+              <Heading use="h3">But there are other options:</Heading>
+
+              <Table isResponsive responsiveBreakpoint="tablet">
+                <Table.Head>
+                  <Table.Row>
+                    <Table.HeadCell>Alias</Table.HeadCell>
+                    <Table.HeadCell>Destination</Table.HeadCell>
+                  </Table.Row>
+                </Table.Head>
+                <Table.Body>
+                  <>
+                    {similarLinks.map((link) => (
+                      <Table.Row key={link.id}>
+                        <Table.Cell>{link.alias}</Table.Cell>
+                        <Table.Cell>
+                          <Link
+                            href={link.url}
+                            style={{
+                              display: 'block',
+                              maxWidth: '350px',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}>
+                            {link.url}
+                          </Link>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </>
+                </Table.Body>
+              </Table>
+            </>
+          )}
+        </Stack>
+      </Flex>
     </PageContent>
   );
 };
 
-export default Redirect;
+export default LinkNotFound;
 
 export const getServerSideProps: GetServerSideProps = async (
   context
 ) => {
   const { initializeApollo } = await import('../lib/apollo');
   const alias = (context.query.alias as string[]).join('/');
-  const apolloClient = initializeApollo(undefined);
+  const apolloClient = initializeApollo();
 
-  const queryResult = await apolloClient.query({
+  const queryResult = await apolloClient.query<
+    GetLinkByAliasQuery,
+    GetLinkByAliasQueryVariables
+  >({
     query: GetLinkByAliasDocument,
     variables: {
       alias,
     },
   });
 
-  console.log(queryResult);
-
-  if (queryResult.data.linkByAlias) {
-    const mutationResult = await apolloClient.mutate({
-      mutation: CreateLinkUsageMetricDocument,
+  if (!queryResult.data.linkByAlias) {
+    const searchResults = await apolloClient.query<
+      SearchLinksQuery,
+      SearchLinksQueryVariables
+    >({
+      query: SearchLinksDocument,
       variables: {
-        linkId: queryResult.data.linkByAlias.id,
+        search: alias,
       },
     });
-    console.log(mutationResult);
+
+    return {
+      props: {
+        similarLinks: searchResults.data.searchLinks.nodes,
+      },
+    };
   }
 
+  /**
+   * Trigger metric update and forget it.
+   */
+  apolloClient.mutate<
+    CreateLinkUsageMetricMutation,
+    CreateLinkUsageMetricMutationVariables
+  >({
+    mutation: CreateLinkUsageMetricDocument,
+    variables: {
+      linkId: queryResult.data.linkByAlias.id,
+    },
+  });
+
+  const response = context.res;
+
+  response.writeHead(302, {
+    Location: queryResult.data.linkByAlias.url,
+  });
+
+  response.end();
+
+  /**
+   * This line doesn't do anything actually.
+   * The request is already ended at this point.
+   **/
   return {
     props: {
-      alias,
+      similarLinks: [],
     },
   };
 };

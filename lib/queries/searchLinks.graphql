@@ -1,0 +1,9 @@
+query searchLinks($search: String!) {
+  searchLinks(search: $search) {
+    nodes {
+      id
+      url
+      alias
+    }
+  }
+}

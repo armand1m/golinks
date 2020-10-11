@@ -96,9 +96,12 @@ const Index: React.FC<Props> = ({
         message: 'Link is in your clipboard.',
       });
     } catch (error) {
-      console.error('Failed to Copy Link, details: ', error);
+      console.error(
+        'Failed to copy Link to the clipboard, details: ',
+        error
+      );
       toasts.danger({
-        title: 'Failed to Copy Link',
+        title: 'Failed to copy Link',
         message: 'An unexpected error occurred.',
       });
     }
