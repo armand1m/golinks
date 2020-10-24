@@ -133,8 +133,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     context?.req as NextApiRequest
   );
   const apolloClient = initializeApollo();
-
-  const alias = (context.query.alias as string[]).join('/');
   const logoname = Config.metadata.logoname;
   const baseUrl = Config.metadata.baseUrl;
   const isAuthEnabled = Config.features.auth0;
@@ -148,17 +146,46 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       )
     : false;
 
-  const queryResult = await apolloClient.query<
-    GetLinkByAliasQuery,
-    GetLinkByAliasQueryVariables
-  >({
-    query: GetLinkByAliasDocument,
-    variables: {
-      alias,
-    },
-  });
+  const findLinkRecursive = async (
+    paths: string[]
+  ): Promise<{
+    link?: GetLinkByAliasQuery['linkByAlias'];
+    alias: string;
+  }> => {
+    if (paths.length === 0) {
+      return {
+        link: undefined,
+        alias: (context.query.alias as string[]).join('/'),
+      };
+    }
 
-  const link = queryResult.data.linkByAlias;
+    const alias = paths.join('/');
+
+    const queryResult = await apolloClient.query<
+      GetLinkByAliasQuery,
+      GetLinkByAliasQueryVariables
+    >({
+      query: GetLinkByAliasDocument,
+      variables: {
+        alias,
+      },
+    });
+
+    const link = queryResult.data.linkByAlias;
+
+    if (!link) {
+      return findLinkRecursive(paths.slice(0, -1));
+    }
+
+    return {
+      link,
+      alias,
+    };
+  };
+
+  const { link, alias } = await findLinkRecursive(
+    context.query.alias as string[]
+  );
 
   if (!link) {
     const searchResults = await apolloClient.query<
@@ -213,8 +240,28 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 
   const response = context.res;
 
+  const buildFinalUrl = () => {
+    const urlParameters = link.url.match(/\$(\d+)/g);
+
+    if (urlParameters?.length) {
+      const parameters = (context.query.alias as string[]).filter(
+        (param) => param !== alias && !alias.includes(param)
+      );
+
+      const finalUrl = urlParameters.reduce((acc, _url, index) => {
+        return acc.replace(/\$(\d+)/i, parameters[index]);
+      }, link.url);
+
+      console.log(urlParameters, parameters, finalUrl);
+
+      return finalUrl;
+    }
+
+    return link.url;
+  };
+
   response.writeHead(302, {
-    Location: link.url,
+    Location: buildFinalUrl(),
   });
 
   response.end();

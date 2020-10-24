@@ -58,13 +58,15 @@ Contributions for the following are very welcome.
   - [x] Number: Usage Total Count
   - [x] Graph: Usage of last 31 days
 - [ ] Link Ownership
-- [ ] Link Parameters
+- [x] Link Parameters
+  - For example, a `gh` alias with url `https://github.com/$1/$2` allows `https://go/gh/armand1m/golinks` to be possible.
 - [ ] Link Groups (Folders)
   - [x] URL: Accept `/` and can be redirected
   - [ ] UI: Folds URL groups
 - [ ] Private Links
 - [ ] Temporary Links
 - [ ] Random Alias
+- [ ] Help section
 - [ ] Chrome Plugin
 
 ## Usage
