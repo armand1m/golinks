@@ -24,7 +24,8 @@ export const createRedirectUrl = ({
     );
 
     const finalUrl = urlParameters.reduce((acc, urlParam, index) => {
-      return acc.replace(urlParam, parameters[index]);
+      const parameter = parameters[index] ?? '';
+      return acc.replace(urlParam, parameter);
     }, linkUrl);
 
     return finalUrl;
