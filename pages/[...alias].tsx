@@ -13,11 +13,6 @@ import {
 import { NotFoundAnimation } from '../components/NotFoundAnimation';
 import { TopNavigation } from '../components/TopNavigation';
 import {
-  GetLinkByAliasDocument,
-  GetLinkByAliasQuery,
-  GetLinkByAliasQueryVariables,
-} from '../lib/queries/getLinkByAlias.graphql';
-import {
   CreateLinkUsageMetricDocument,
   CreateLinkUsageMetricMutation,
   CreateLinkUsageMetricMutationVariables,
@@ -27,6 +22,10 @@ import {
   SearchLinksQuery,
   SearchLinksQueryVariables,
 } from '../lib/queries/searchLinks.graphql';
+import {
+  createRedirectUrl,
+  findLinkRecursive,
+} from '../lib/features/link-parameters';
 
 interface Props {
   alias: string;
@@ -133,8 +132,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     context?.req as NextApiRequest
   );
   const apolloClient = initializeApollo();
-
-  const alias = (context.query.alias as string[]).join('/');
   const logoname = Config.metadata.logoname;
   const baseUrl = Config.metadata.baseUrl;
   const isAuthEnabled = Config.features.auth0;
@@ -148,19 +145,14 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       )
     : false;
 
-  const queryResult = await apolloClient.query<
-    GetLinkByAliasQuery,
-    GetLinkByAliasQueryVariables
-  >({
-    query: GetLinkByAliasDocument,
-    variables: {
-      alias,
-    },
+  const contextAlias = context.query.alias as string[];
+  const link = await findLinkRecursive({
+    contextAlias,
+    apolloClient,
   });
 
-  const link = queryResult.data.linkByAlias;
-
   if (!link) {
+    const alias = contextAlias.join('/');
     const searchResults = await apolloClient.query<
       SearchLinksQuery,
       SearchLinksQueryVariables
@@ -187,7 +179,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   }
 
   /**
-   * Trigger metric update and forget about it.
+   * Trigger metric update in the background.
    */
   apolloClient
     .mutate<
@@ -214,7 +206,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const response = context.res;
 
   response.writeHead(302, {
-    Location: link.url,
+    Location: createRedirectUrl({
+      linkUrl: link.url,
+      linkAlias: link.alias,
+      contextAlias,
+    }),
   });
 
   response.end();
@@ -225,7 +221,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
    **/
   return {
     props: {
-      alias,
+      alias: link.alias,
       baseUrl,
       logoname,
       isMobile,
