@@ -13,11 +13,6 @@ import {
 import { NotFoundAnimation } from '../components/NotFoundAnimation';
 import { TopNavigation } from '../components/TopNavigation';
 import {
-  GetLinkByAliasDocument,
-  GetLinkByAliasQuery,
-  GetLinkByAliasQueryVariables,
-} from '../lib/queries/getLinkByAlias.graphql';
-import {
   CreateLinkUsageMetricDocument,
   CreateLinkUsageMetricMutation,
   CreateLinkUsageMetricMutationVariables,
@@ -27,6 +22,10 @@ import {
   SearchLinksQuery,
   SearchLinksQueryVariables,
 } from '../lib/queries/searchLinks.graphql';
+import {
+  createRedirectUrl,
+  findLinkRecursive,
+} from '../lib/features/link-parameters';
 
 interface Props {
   alias: string;
@@ -146,48 +145,14 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       )
     : false;
 
-  const findLinkRecursive = async (
-    paths: string[]
-  ): Promise<{
-    link?: GetLinkByAliasQuery['linkByAlias'];
-    alias: string;
-  }> => {
-    if (paths.length === 0) {
-      return {
-        link: undefined,
-        alias: (context.query.alias as string[]).join('/'),
-      };
-    }
-
-    const alias = paths.join('/');
-
-    const queryResult = await apolloClient.query<
-      GetLinkByAliasQuery,
-      GetLinkByAliasQueryVariables
-    >({
-      query: GetLinkByAliasDocument,
-      variables: {
-        alias,
-      },
-    });
-
-    const link = queryResult.data.linkByAlias;
-
-    if (!link) {
-      return findLinkRecursive(paths.slice(0, -1));
-    }
-
-    return {
-      link,
-      alias,
-    };
-  };
-
-  const { link, alias } = await findLinkRecursive(
-    context.query.alias as string[]
-  );
+  const contextAlias = context.query.alias as string[];
+  const link = await findLinkRecursive({
+    contextAlias,
+    apolloClient,
+  });
 
   if (!link) {
+    const alias = contextAlias.join('/');
     const searchResults = await apolloClient.query<
       SearchLinksQuery,
       SearchLinksQueryVariables
@@ -214,7 +179,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   }
 
   /**
-   * Trigger metric update and forget about it.
+   * Trigger metric update in the background.
    */
   apolloClient
     .mutate<
@@ -240,28 +205,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 
   const response = context.res;
 
-  const buildFinalUrl = () => {
-    const urlParameters = link.url.match(/\$(\d+)/g);
-
-    if (urlParameters?.length) {
-      const parameters = (context.query.alias as string[]).filter(
-        (param) => param !== alias && !alias.includes(param)
-      );
-
-      const finalUrl = urlParameters.reduce((acc, _url, index) => {
-        return acc.replace(/\$(\d+)/i, parameters[index]);
-      }, link.url);
-
-      console.log(urlParameters, parameters, finalUrl);
-
-      return finalUrl;
-    }
-
-    return link.url;
-  };
-
   response.writeHead(302, {
-    Location: buildFinalUrl(),
+    Location: createRedirectUrl({
+      linkUrl: link.url,
+      linkAlias: link.alias,
+      contextAlias,
+    }),
   });
 
   response.end();
@@ -272,7 +221,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
    **/
   return {
     props: {
-      alias,
+      alias: link.alias,
       baseUrl,
       logoname,
       isMobile,
