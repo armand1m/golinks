@@ -33,7 +33,7 @@
     "@apollo/react-components": "^4.0.0",
     "@apollo/react-hooks": "^4.0.0",
     "@auth0/auth0-react": "^1.0.0",
-    "@auth0/nextjs-auth0": "^0.15.0",
+    "@auth0/nextjs-auth0": "^1.6.2",
     "@data-ui/sparkline": "^0.0.84",
     "@emotion/core": "^10.0.28",
     "@fortawesome/fontawesome-svg-core": "^1.2.30",
