@@ -45,7 +45,7 @@
     "bumbag-server": "^1.1.16",
     "date-fns": "^2.16.1",
     "emotion": "^10.0.27",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "express-jwt": "^6.0.0",
     "formik": "^2.1.5",
     "graphile-build": "^4.7.0",
