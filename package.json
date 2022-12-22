@@ -52,7 +52,7 @@
     "graphile-build-pg": "^4.7.0",
     "graphql": "^14.6.0",
     "graphql-tag": "^2.10.3",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "jwks-rsa": "^1.8.1",
     "jwt-decode": "^2.2.0",
     "next": "latest",
