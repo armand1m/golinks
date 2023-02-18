@@ -1,4 +1,8 @@
+/**
+ * @type {import('next').NextConfig}
+ */
 module.exports = {
+  output: 'standalone',
   webpack(config, options) {
     config.module.rules.push({
       test: /\.graphql$/,

@@ -191,6 +191,7 @@ export const withAuthentication = (handler: NextApiHandler) => async (
     await handler(req, res);
   } catch (error) {
     console.error(error);
-    res.status(error.status || 500).end(error.message);
+    const anyError = error as any;
+    res.status(anyError.status ?? 500).end(anyError.message);
   }
 };

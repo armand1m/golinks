@@ -19,3 +19,5 @@ docker-compose*
 ./.github
 ./.next
 ./__generated__
+./.fly
+fly.toml
