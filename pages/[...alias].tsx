@@ -37,7 +37,7 @@ interface Props {
   similarLinks: SearchLinksQuery['searchLinks']['nodes'];
 }
 
-const LinkNotFound: React.FC<Props> = ({
+const LinkNotFound = ({
   alias,
   baseUrl,
   logoname,
@@ -45,7 +45,7 @@ const LinkNotFound: React.FC<Props> = ({
   isAuthEnabled,
   isAuthenticated,
   similarLinks,
-}) => (
+}: Props) => (
   <PageWithHeader
     header={
       <TopNavigation

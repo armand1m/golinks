@@ -31,6 +31,7 @@
     "@apollo/client": "^3.2.3",
     "@apollo/react-common": "^3.1.4",
     "@apollo/react-components": "^4.0.0",
+    "@apollo/react-hoc": "^4.0.0",
     "@apollo/react-hooks": "^4.0.0",
     "@auth0/auth0-react": "^1.0.0",
     "@auth0/nextjs-auth0": "^0.15.0",
@@ -45,6 +46,7 @@
     "bumbag-server": "^1.1.16",
     "date-fns": "^2.16.1",
     "emotion": "^10.0.27",
+    "eslint-config-next": "^13.1.6",
     "express": "^4.17.1",
     "express-jwt": "^6.0.0",
     "formik": "^2.1.5",
@@ -55,16 +57,17 @@
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^1.8.1",
     "jwt-decode": "^2.2.0",
-    "next": "latest",
+    "next": "^13",
     "postgraphile": "^4.7.0",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-kawaii": "^0.16.0",
     "react-lottie": "^1.2.3",
     "yup": "^0.29.1"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^1.15.1",
+    "@graphql-codegen/import-types-preset": "^2.2.6",
     "@graphql-codegen/plugin-helpers": "^1.15.1",
     "@graphql-codegen/typescript": "^1.13.3",
     "@graphql-codegen/typescript-operations": "^1.13.3",
@@ -78,6 +81,6 @@
     "@types/yup": "^0.29.3",
     "graphql-let": "0.x",
     "prettier": "^2.0.5",
-    "typescript": "^3.8.3"
+    "typescript": "^4"
   }
 }

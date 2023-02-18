@@ -88,6 +88,8 @@ A Docker Image is available at Docker Hub: https://hub.docker.com/r/armand1m/gol
 
 ## Deploying to Kubernetes (GKE + Cloud SQL)
 
+> **NOTE:** This application used to be deployed on GKE with a self-hosted postgres instance. Over time, I've had many issues with both cost of this setup, and the degraded performance. As of 2023, this application is now hosted on https://fly.io, which offered a much simpler and cheaper option to run this application while also being faster and easier to maintain. That said, I kept the kubernetes manifests for future reference, or in case I end up coming back to kubernetes for side projects for any reason :)
+
 > Make sure to change the manifests accordingly to your environment.
 
 Check the `./kubernetes` folder for k8s manifests content.
