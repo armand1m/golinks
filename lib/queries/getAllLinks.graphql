@@ -1,10 +1,10 @@
-query getAllLinks {
-  links(orderBy: ALIAS_ASC) {
+query getAllLinks($first: Int = 50) {
+  links(orderBy: ALIAS_ASC, first: $first) {
     nodes {
       id
       url
       alias
-      linkUsageMetrics {
+      linkUsageMetrics(first: 31, orderBy: [PRIMARY_KEY_DESC]) {
         totalCount
         nodes {
           accessedAt

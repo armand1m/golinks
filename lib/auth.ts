@@ -20,6 +20,30 @@ interface DecodedAccessToken {
   header: JwtHeader;
 }
 
+let jwksSecretClient: ReturnType<typeof jwksRsa> | null = null;
+
+const getJwksClient = () => {
+  if (!Config.auth0) {
+    throw new Error(
+      "Missing Auth0 parameters. Make sure you've passed correctly all environment variables."
+    );
+  }
+
+  if (!jwksSecretClient) {
+    jwksSecretClient = jwksRsa({
+      cache: true,
+      rateLimit: true,
+      jwksRequestsPerMinute: 5,
+      jwksUri: new URL(
+        '/.well-known/jwks.json',
+        `https://${Config.auth0.domain}`
+      ).href,
+    });
+  }
+
+  return jwksSecretClient;
+};
+
 interface DecodedJwtToken {
   iss: string;
   sub: string;
@@ -41,12 +65,6 @@ interface DecodedJwtToken {
 export const getPermissionsFromSession = async (
   session: ISession
 ) => {
-  if (!Config.auth0) {
-    throw new Error(
-      "Missing Auth0 parameters. Make sure you've passed correctly all environment variables."
-    );
-  }
-
   if (!session.accessToken) {
     throw new Error(
       'Session is missing an access token. This is an issue with your auth provider.'
@@ -62,17 +80,9 @@ export const getPermissionsFromSession = async (
     throw new Error('Failed to decode token.');
   }
 
-  const jwksSecretClient = jwksRsa({
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    jwksUri: new URL(
-      '/.well-known/jwks.json',
-      `https://${Config.auth0.domain}`
-    ).href,
-  });
+  const client = getJwksClient();
 
-  const signingKey = await promisify(jwksSecretClient.getSigningKey)(
+  const signingKey = await promisify(client.getSigningKey)(
     decodedAccessToken.header.kid
   );
 

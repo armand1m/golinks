@@ -34,12 +34,19 @@ function createApolloClient() {
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
     link: createIsomorphicLink(),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      // Disable result caching on the server to prevent memory leaks
+      // from the cache growing unbounded across SSR requests
+      resultCaching: typeof window !== 'undefined',
+    }),
   });
 }
 
 export function initializeApollo(initialState: any = null) {
-  const _apolloClient = apolloClient ?? createApolloClient();
+  // On the server, always create a new Apollo Client to avoid memory leaks
+  // from the singleton persisting across SSR requests
+  const _apolloClient =
+    typeof window === 'undefined' ? createApolloClient() : apolloClient ?? createApolloClient();
 
   // If your page has Next.js data fetching methods that use Apollo Client, the initial state
   // get hydrated here
