@@ -1,4 +1,4 @@
-import { TopNav, Heading, Button } from 'bumbag';
+import { TopNav, Heading, Button, useColorMode } from 'bumbag';
 
 interface Props {
   baseUrl: string;
@@ -13,11 +13,24 @@ export const TopNavigation: React.FC<Props> = ({
   isAuthenticated,
   isAuthEnabled,
 }) => {
+  const { colorMode, setColorMode } = useColorMode();
+
   return (
     <TopNav>
       <TopNav.Section>
         <TopNav.Item href={baseUrl} fontWeight="semibold">
           <Heading use="h3">{logoname}</Heading>
+        </TopNav.Item>
+      </TopNav.Section>
+      <TopNav.Section marginLeft="auto">
+        <TopNav.Item>
+          <Button
+            variant="ghost"
+            onClick={() =>
+              setColorMode(colorMode === 'dark' ? 'default' : 'dark')
+            }>
+            {colorMode === 'dark' ? '☀️' : '🌙'}
+          </Button>
         </TopNav.Item>
       </TopNav.Section>
       {isAuthEnabled && (

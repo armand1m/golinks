@@ -53,7 +53,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="og:title" content="Go Links" key="title" />
       </Head>
       <ApolloProvider client={apolloClient}>
-        <ThemeProvider colorMode="light" theme={theme}>
+        <ThemeProvider theme={theme}>
           <ToastManager />
           <Component {...pageProps} />
         </ThemeProvider>
