@@ -23,7 +23,8 @@
     "incremental": true
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/__generated__/**"
   ],
   "include": [
     "**/*.ts",
