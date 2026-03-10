@@ -65,6 +65,14 @@ interface DecodedJwtToken {
 export const getPermissionsFromSession = async (
   session: ISession
 ) => {
+  if (!Config.auth0) {
+    throw new Error(
+      "Missing Auth0 parameters. Make sure you've passed correctly all environment variables."
+    );
+  }
+
+  const auth0Config = Config.auth0;
+
   if (!session.accessToken) {
     throw new Error(
       'Session is missing an access token. This is an issue with your auth provider.'
@@ -90,8 +98,8 @@ export const getPermissionsFromSession = async (
     session.accessToken,
     signingKey.getPublicKey(),
     {
-      audience: Config.auth0.audience,
-      issuer: new URL(`https://${Config.auth0.domain}`).href,
+      audience: auth0Config.audience,
+      issuer: new URL(`https://${auth0Config.domain}`).href,
       algorithms: ['RS256'],
     }
   );
