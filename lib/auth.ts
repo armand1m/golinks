@@ -47,6 +47,8 @@ export const getPermissionsFromSession = async (
     );
   }
 
+  const auth0Config = Config.auth0;
+
   if (!session.accessToken) {
     throw new Error(
       'Session is missing an access token. This is an issue with your auth provider.'
@@ -68,7 +70,7 @@ export const getPermissionsFromSession = async (
     jwksRequestsPerMinute: 5,
     jwksUri: new URL(
       '/.well-known/jwks.json',
-      `https://${Config.auth0.domain}`
+      `https://${auth0Config.domain}`
     ).href,
   });
 
@@ -80,8 +82,8 @@ export const getPermissionsFromSession = async (
     session.accessToken,
     signingKey.getPublicKey(),
     {
-      audience: Config.auth0.audience,
-      issuer: new URL(`https://${Config.auth0.domain}`).href,
+      audience: auth0Config.audience,
+      issuer: new URL(`https://${auth0Config.domain}`).href,
       algorithms: ['RS256'],
     }
   );
