@@ -14,6 +14,7 @@ export const TopNavigation: React.FC<Props> = ({
   isAuthEnabled,
 }) => {
   const { colorMode, setColorMode } = useColorMode();
+  const nextColorMode = colorMode === 'dark' ? 'light' : 'dark';
 
   return (
     <TopNav>
@@ -25,10 +26,12 @@ export const TopNavigation: React.FC<Props> = ({
       <TopNav.Section marginLeft="auto">
         <TopNav.Item>
           <Button
+            aria-label={`Switch to ${nextColorMode} mode`}
             variant="ghost"
             onClick={() =>
               setColorMode(colorMode === 'dark' ? 'default' : 'dark')
-            }>
+            }
+          >
             {colorMode === 'dark' ? '☀️' : '🌙'}
           </Button>
         </TopNav.Item>
@@ -40,16 +43,16 @@ export const TopNavigation: React.FC<Props> = ({
               <Button
                 iconBefore="solid-sign-out-alt"
                 variant="link"
-                onClick={() =>
-                  window.location.replace('/api/logout')
-                }>
+                onClick={() => window.location.replace('/api/logout')}
+              >
                 Logout
               </Button>
             ) : (
               <Button
                 iconBefore="solid-sign-out-alt"
                 variant="link"
-                onClick={() => window.location.replace('/api/login')}>
+                onClick={() => window.location.replace('/api/login')}
+              >
                 Login
               </Button>
             )}

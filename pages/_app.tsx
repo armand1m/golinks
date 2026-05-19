@@ -16,9 +16,16 @@ import {
 import { ApolloProvider } from '@apollo/react-hooks';
 import { useApollo } from '../lib/apollo';
 import { NextPageContext } from 'next';
+import { ThemeModeController } from '../components/ThemeModeController';
+import {
+  ThemeMode,
+  readThemeModeCookie,
+  toBumbagColorMode,
+} from '../lib/theme';
 
 const theme: ThemeConfig = {
   modes: {
+    enableLocalStorage: false,
     useSystemColorMode: false,
   },
   global: {
@@ -43,7 +50,15 @@ const theme: ThemeConfig = {
   },
 };
 
-export default function App({ Component, pageProps }: AppProps) {
+type ThemeAppProps = AppProps & {
+  initialThemeMode: ThemeMode;
+};
+
+export default function App({
+  Component,
+  pageProps,
+  initialThemeMode,
+}: ThemeAppProps) {
   const apolloClient = useApollo(pageProps.initialApolloState);
 
   return (
@@ -53,7 +68,11 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="og:title" content="Go Links" key="title" />
       </Head>
       <ApolloProvider client={apolloClient}>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider
+          colorMode={toBumbagColorMode(initialThemeMode)}
+          theme={theme}
+        >
+          <ThemeModeController initialThemeMode={initialThemeMode} />
           <ToastManager />
           <Component {...pageProps} />
         </ThemeProvider>
@@ -80,10 +99,14 @@ App.getInitialProps = async ({
   ctx,
 }: InitialPropsArgs) => {
   let pageProps = {};
+  const rawCookie =
+    ctx.req?.headers.cookie ||
+    (typeof document !== 'undefined' ? document.cookie : undefined);
+  const initialThemeMode = readThemeModeCookie(rawCookie);
 
   if (Component.getInitialProps) {
     pageProps = await Component.getInitialProps(ctx);
   }
 
-  return { pageProps };
+  return { pageProps, initialThemeMode };
 };
