@@ -1,12 +1,19 @@
 import {
-  Box,
   Table,
-  Text,
-  Link as FannyLink,
-  Button,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   DropdownMenu,
-  Icon,
-} from 'bumbag';
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Pencil, Share2, Trash2 } from 'lucide-react';
 import { GetAllLinksQuery } from '../../lib/queries/getAllLinks.graphql';
 import { LinkMetricUsageGraph } from '../LinkMetricUsageGraph';
 
@@ -33,111 +40,96 @@ export const LinkTable: React.FC<Props> = ({
 
   if (links?.nodes.length === 0) {
     return (
-      <Box>
-        <Text>There are no golinks available.</Text>
-      </Box>
+      <div>
+        <p>There are no golinks available.</p>
+      </div>
     );
   }
 
   return (
-    <Table isResponsive responsiveBreakpoint="tablet">
-      <Table.Head>
-        <Table.Row>
-          <Table.HeadCell>Alias</Table.HeadCell>
-          <Table.HeadCell>Destination</Table.HeadCell>
-          <Table.HeadCell textAlign="center">
-            Month Usage
-          </Table.HeadCell>
-          <Table.HeadCell textAlign="center">
-            Total Usage
-          </Table.HeadCell>
-          <Table.HeadCell textAlign="right">Actions</Table.HeadCell>
-        </Table.Row>
-      </Table.Head>
-      <Table.Body>
-        <>
+    <div className="w-full overflow-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Alias</TableHead>
+            <TableHead>Destination</TableHead>
+            <TableHead className="text-center">Month Usage</TableHead>
+            <TableHead className="text-center">Total Usage</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {links?.nodes.map((link) => (
-            <Table.Row key={link.id}>
-              <Table.Cell>
-                <FannyLink
+            <TableRow key={link.id}>
+              <TableCell>
+                <a
                   href={new URL(link.alias, baseUrl).href}
-                  style={{
-                    display: 'block',
-                    maxWidth: '350px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
+                  className="block max-w-[350px] truncate text-primary underline"
+                >
                   {link.alias}
-                </FannyLink>
-              </Table.Cell>
-              <Table.Cell>
-                <FannyLink
+                </a>
+              </TableCell>
+              <TableCell>
+                <a
                   href={link.url}
-                  style={{
-                    display: 'block',
-                    maxWidth: '350px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
+                  className="block max-w-[350px] truncate text-primary underline"
+                >
                   {link.url}
-                </FannyLink>
-              </Table.Cell>
-              <Table.Cell textAlign="center">
+                </a>
+              </TableCell>
+              <TableCell className="text-center">
                 <LinkMetricUsageGraph
                   linkUsageMetrics={link.linkUsageMetrics.nodes}
                 />
-              </Table.Cell>
-              <Table.Cell textAlign="center">
+              </TableCell>
+              <TableCell className="text-center">
                 {link.linkUsageMetrics.totalCount}
-              </Table.Cell>
-              <Table.Cell textAlign="right">
-                <DropdownMenu
-                  menu={
-                    <>
-                      {isEditEnabled && (
-                        <DropdownMenu.Item
-                          disabled={!isEditEnabled}
-                          iconBefore="solid-edit"
-                          onClick={() => onEdit(link.id)}>
-                          Edit
-                        </DropdownMenu.Item>
-                      )}
-                      <DropdownMenu.Item
-                        iconBefore="solid-share"
-                        onClick={() => {
-                          const url = new URL(
-                            link.alias,
-                            document.location.origin
-                          ).toString();
-                          onShare(url);
-                        }}>
-                        Share
-                      </DropdownMenu.Item>
-                      {isDeleteEnabled && (
-                        <DropdownMenu.Item
-                          disabled={!isDeleteEnabled}
-                          iconBefore="solid-trash-alt"
-                          color="danger"
-                          onClick={() => {
-                            onDelete(link.id);
-                          }}>
-                          Delete
-                        </DropdownMenu.Item>
-                      )}
-                    </>
-                  }>
-                  <Button size="small">
-                    <Icon icon="solid-edit" />
-                  </Button>
+              </TableCell>
+              <TableCell className="text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="ghost">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {isEditEnabled && (
+                      <DropdownMenuItem
+                        onClick={() => onEdit(link.id)}
+                      >
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      onClick={() => {
+                        const url = new URL(
+                          link.alias,
+                          document.location.origin
+                        ).toString();
+                        onShare(url);
+                      }}
+                    >
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Share
+                    </DropdownMenuItem>
+                    {isDeleteEnabled && (
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => onDelete(link.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
                 </DropdownMenu>
-              </Table.Cell>
-            </Table.Row>
+              </TableCell>
+            </TableRow>
           ))}
-        </>
-      </Table.Body>
-    </Table>
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

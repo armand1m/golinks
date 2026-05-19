@@ -194,22 +194,21 @@ export const getAuth0 = () => {
 
 export type { IClaims } from '@auth0/nextjs-auth0/dist/session/session';
 
-export const withAuthentication = (handler: NextApiHandler) => async (
-  req: NextApiRequest,
-  res: NextApiResponse
-) => {
-  try {
-    if (!Config.features.auth0) {
-      return res.status(501).json({
-        message:
-          'Authentication is disabled in this application deployment.',
-      });
-    }
+export const withAuthentication =
+  (handler: NextApiHandler) =>
+  async (req: NextApiRequest, res: NextApiResponse) => {
+    try {
+      if (!Config.features.auth0) {
+        return res.status(501).json({
+          message:
+            'Authentication is disabled in this application deployment.',
+        });
+      }
 
-    await handler(req, res);
-  } catch (error) {
-    console.error(error);
-    const anyError = error as any;
-    res.status(anyError.status ?? 500).end(anyError.message);
-  }
-};
+      await handler(req, res);
+    } catch (error) {
+      console.error(error);
+      const anyError = error as any;
+      res.status(anyError.status ?? 500).end(anyError.message);
+    }
+  };

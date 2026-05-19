@@ -20,7 +20,11 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "exclude": [
     "node_modules",

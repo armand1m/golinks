@@ -1,54 +1,13 @@
 import Head from 'next/head';
 import { AppProps } from 'next/app';
-import {
-  Provider as ThemeProvider,
-  ToastManager,
-  ThemeConfig,
-  css,
-} from 'bumbag';
-import {
-  faEdit,
-  faShare,
-  faTrashAlt,
-  faChartBar,
-  faSignOutAlt,
-} from '@fortawesome/free-solid-svg-icons';
+import '../styles/globals.css';
+import { ThemeProvider } from 'next-themes';
+import { Toaster } from 'sonner';
 import { ApolloProvider } from '@apollo/react-hooks';
 import { useApollo } from '../lib/apollo';
 import { NextPageContext } from 'next';
 import { ThemeModeController } from '../components/ThemeModeController';
-import {
-  ThemeMode,
-  readThemeModeCookie,
-  toBumbagColorMode,
-} from '../lib/theme';
-
-const theme: ThemeConfig = {
-  modes: {
-    enableLocalStorage: false,
-    useSystemColorMode: false,
-  },
-  global: {
-    styles: {
-      base: css``,
-    },
-  },
-  Icon: {
-    iconSets: [
-      {
-        icons: [
-          faEdit,
-          faShare,
-          faTrashAlt,
-          faChartBar,
-          faSignOutAlt,
-        ],
-        prefix: 'solid-',
-        type: 'font-awesome',
-      },
-    ],
-  },
-};
+import { ThemeMode, readThemeModeCookie } from '../lib/theme';
 
 type ThemeAppProps = AppProps & {
   initialThemeMode: ThemeMode;
@@ -69,11 +28,11 @@ export default function App({
       </Head>
       <ApolloProvider client={apolloClient}>
         <ThemeProvider
-          colorMode={toBumbagColorMode(initialThemeMode)}
-          theme={theme}
+          attribute="class"
+          defaultTheme={initialThemeMode}
         >
           <ThemeModeController initialThemeMode={initialThemeMode} />
-          <ToastManager />
+          <Toaster />
           <Component {...pageProps} />
         </ThemeProvider>
       </ApolloProvider>

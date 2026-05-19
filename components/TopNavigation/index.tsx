@@ -1,4 +1,7 @@
-import { TopNav, Heading, Button, useColorMode } from 'bumbag';
+import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
+import { LogIn, LogOut } from 'lucide-react';
 
 interface Props {
   baseUrl: string;
@@ -13,52 +16,52 @@ export const TopNavigation: React.FC<Props> = ({
   isAuthenticated,
   isAuthEnabled,
 }) => {
-  const { colorMode, setColorMode } = useColorMode();
-  const nextColorMode = colorMode === 'dark' ? 'light' : 'dark';
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
-    <TopNav>
-      <TopNav.Section>
-        <TopNav.Item href={baseUrl} fontWeight="semibold">
-          <Heading use="h3">{logoname}</Heading>
-        </TopNav.Item>
-      </TopNav.Section>
-      <TopNav.Section marginLeft="auto">
-        <TopNav.Item>
+    <nav className="flex items-center justify-between border-b px-6 py-3">
+      <div>
+        <a href={baseUrl} className="font-semibold">
+          <h3 className="text-lg font-semibold">{logoname}</h3>
+        </a>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          aria-label={`Switch to ${
+            theme === 'dark' ? 'light' : 'dark'
+          } mode`}
+          variant="ghost"
+          size="icon"
+          onClick={() =>
+            setTheme(theme === 'dark' ? 'light' : 'dark')
+          }
+          suppressHydrationWarning
+        >
+          {mounted ? (theme === 'dark' ? '☀️' : '🌙') : '🌙'}
+        </Button>
+        {isAuthEnabled && (
           <Button
-            aria-label={`Switch to ${nextColorMode} mode`}
-            variant="ghost"
+            variant="link"
             onClick={() =>
-              setColorMode(colorMode === 'dark' ? 'default' : 'dark')
+              window.location.replace(
+                isAuthenticated ? '/api/logout' : '/api/login'
+              )
             }
           >
-            {colorMode === 'dark' ? '☀️' : '🌙'}
-          </Button>
-        </TopNav.Item>
-      </TopNav.Section>
-      {isAuthEnabled && (
-        <TopNav.Section>
-          <TopNav.Item>
             {isAuthenticated ? (
-              <Button
-                iconBefore="solid-sign-out-alt"
-                variant="link"
-                onClick={() => window.location.replace('/api/logout')}
-              >
-                Logout
-              </Button>
+              <LogOut className="mr-2 h-4 w-4" />
             ) : (
-              <Button
-                iconBefore="solid-sign-out-alt"
-                variant="link"
-                onClick={() => window.location.replace('/api/login')}
-              >
-                Login
-              </Button>
+              <LogIn className="mr-2 h-4 w-4" />
             )}
-          </TopNav.Item>
-        </TopNav.Section>
-      )}
-    </TopNav>
+            {isAuthenticated ? 'Logout' : 'Login'}
+          </Button>
+        )}
+      </div>
+    </nav>
   );
 };

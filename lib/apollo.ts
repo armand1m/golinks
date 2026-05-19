@@ -46,7 +46,9 @@ export function initializeApollo(initialState: any = null) {
   // On the server, always create a new Apollo Client to avoid memory leaks
   // from the singleton persisting across SSR requests
   const _apolloClient =
-    typeof window === 'undefined' ? createApolloClient() : apolloClient ?? createApolloClient();
+    typeof window === 'undefined'
+      ? createApolloClient()
+      : apolloClient ?? createApolloClient();
 
   // If your page has Next.js data fetching methods that use Apollo Client, the initial state
   // get hydrated here
@@ -62,8 +64,9 @@ export function initializeApollo(initialState: any = null) {
 }
 
 export function useApollo(initialState: any) {
-  const store = useMemo(() => initializeApollo(initialState), [
-    initialState,
-  ]);
+  const store = useMemo(
+    () => initializeApollo(initialState),
+    [initialState]
+  );
   return store;
 }

@@ -4,17 +4,10 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { Provider as ThemeProvider, ThemeConfig } from 'bumbag';
+import { ThemeProvider } from 'next-themes';
 import { ThemeModeController } from '../ThemeModeController';
 import { TopNavigation } from '.';
-import { ThemeMode, toBumbagColorMode } from '../../lib/theme';
-
-const theme: ThemeConfig = {
-  modes: {
-    enableLocalStorage: false,
-    useSystemColorMode: false,
-  },
-};
+import { ThemeMode } from '../../lib/theme';
 
 function clearThemeCookie() {
   document.cookie =
@@ -23,10 +16,7 @@ function clearThemeCookie() {
 
 function renderNavigation(initialThemeMode: ThemeMode) {
   return render(
-    <ThemeProvider
-      colorMode={toBumbagColorMode(initialThemeMode)}
-      theme={theme}
-    >
+    <ThemeProvider attribute="class" defaultTheme={initialThemeMode}>
       <ThemeModeController initialThemeMode={initialThemeMode} />
       <TopNavigation
         baseUrl="https://go.example.com"
@@ -41,21 +31,19 @@ function renderNavigation(initialThemeMode: ThemeMode) {
 describe('TopNavigation theme toggle', () => {
   beforeEach(() => {
     clearThemeCookie();
-    document.body.className = '';
+    document.documentElement.className = '';
     window.localStorage.clear();
   });
 
   it('switches from light to dark and does not revert on rerender', async () => {
-    window.localStorage.setItem('bb.mode', 'dark');
-
     const { rerender } = renderNavigation('light');
 
     await waitFor(() => {
-      expect(document.body).toHaveClass('bb-mode-default');
+      expect(
+        document.documentElement.classList.contains('dark')
+      ).toBe(false);
       expect(document.cookie).toContain('theme-mode=light');
     });
-
-    expect(window.localStorage.getItem('bb.mode')).toBeNull();
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -64,7 +52,9 @@ describe('TopNavigation theme toggle', () => {
     );
 
     await waitFor(() => {
-      expect(document.body).toHaveClass('bb-mode-dark');
+      expect(
+        document.documentElement.classList.contains('dark')
+      ).toBe(true);
       expect(document.cookie).toContain('theme-mode=dark');
       expect(
         screen.getByRole('button', {
@@ -74,7 +64,7 @@ describe('TopNavigation theme toggle', () => {
     });
 
     rerender(
-      <ThemeProvider colorMode="default" theme={theme}>
+      <ThemeProvider attribute="class" defaultTheme="light">
         <ThemeModeController initialThemeMode="light" />
         <TopNavigation
           baseUrl="https://go.example.com"
@@ -86,10 +76,10 @@ describe('TopNavigation theme toggle', () => {
     );
 
     await waitFor(() => {
-      expect(document.body).toHaveClass('bb-mode-dark');
+      expect(
+        document.documentElement.classList.contains('dark')
+      ).toBe(true);
       expect(document.cookie).toContain('theme-mode=dark');
     });
-
-    expect(window.localStorage.getItem('bb.mode')).toBeNull();
   });
 });

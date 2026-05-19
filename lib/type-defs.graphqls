@@ -653,7 +653,7 @@ type Query implements Node {
 
     """Read all values in the set after (below) this cursor."""
     after: Cursor
-  ): LinksConnection!
+  ): LinksConnection
 
   """Reads a single `LinkUsageMetric` using its globally unique `ID`."""
   linkUsageMetricByNodeId(

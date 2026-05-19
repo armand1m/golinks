@@ -1,4 +1,3 @@
-import { Box, Text, useTheme } from 'bumbag';
 import {
   Sparkline,
   LineSeries,
@@ -56,19 +55,42 @@ const convertMetricsToLineChartData = (
   return Object.values(countPerDate);
 };
 
+const getThemeColors = () => {
+  if (typeof document === 'undefined') {
+    return {
+      primary: 'hsl(222.2, 47.4%, 11.2%)',
+      primaryLight: 'hsl(222.2, 47.4%, 60%)',
+    };
+  }
+  const isDark = document.documentElement.classList.contains('dark');
+  return isDark
+    ? {
+        primary: 'hsl(210, 40%, 70%)',
+        primaryLight: 'hsl(210, 40%, 85%)',
+      }
+    : {
+        primary: 'hsl(222.2, 47.4%, 11.2%)',
+        primaryLight: 'hsl(222.2, 47.4%, 60%)',
+      };
+};
+
 const Tooltip: React.FC<{ datum: Datum }> = ({ datum }) => (
-  <Box>
-    <Text use="sub">Date: {datum.date}</Text>
+  <div>
+    <p className="text-sm text-muted-foreground">
+      Date: {datum.date}
+    </p>
     <br />
-    <Text use="sub">Usage: {datum.count}</Text>
-  </Box>
+    <p className="text-sm text-muted-foreground">
+      Usage: {datum.count}
+    </p>
+  </div>
 );
 
 export const LinkMetricUsageGraph: React.FC<Props> = ({
   linkUsageMetrics,
 }) => {
-  const { theme } = useTheme();
   const data = convertMetricsToLineChartData(linkUsageMetrics);
+  const colors = getThemeColors();
 
   return (
     <WithTooltip renderTooltip={Tooltip}>
@@ -80,25 +102,26 @@ export const LinkMetricUsageGraph: React.FC<Props> = ({
           height={100}
           margin={{
             left: 0,
-            bottom: theme.spacing.majorUnit * 1,
-            top: theme.spacing.majorUnit * 2,
-            right: theme.spacing.majorUnit * 3,
+            bottom: 8,
+            top: 16,
+            right: 24,
           }}
           data={data}
           valueAccessor={(datum: Datum) => datum.count}
           onMouseLeave={onMouseLeave}
-          onMouseMove={onMouseMove}>
+          onMouseMove={onMouseMove}
+        >
           <PatternLines
             id="area_pattern"
             height={4}
             width={4}
-            stroke={theme.palette.primary300}
+            stroke={colors.primaryLight}
             strokeWidth={1}
             orientation={['diagonal']}
           />
           <LineSeries
             showArea
-            stroke={theme.palette.primary}
+            stroke={colors.primary}
             fill="url(#area_pattern)"
           />
           {tooltipData && [
@@ -111,7 +134,7 @@ export const LinkMetricUsageGraph: React.FC<Props> = ({
             <PointSeries
               key="ref-point"
               points={[tooltipData.index]}
-              fill={theme.palette.primary}
+              fill={colors.primary}
             />,
           ]}
         </Sparkline>

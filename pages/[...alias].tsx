@@ -1,14 +1,14 @@
 import React from 'react';
 import { GetServerSideProps, NextApiRequest } from 'next';
+
 import {
-  Stack,
-  Flex,
   Table,
-  Link,
-  Heading,
-  PageWithHeader,
-  Container,
-} from 'bumbag';
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 import { NotFoundAnimation } from '../components/NotFoundAnimation';
 import { TopNavigation } from '../components/TopNavigation';
@@ -34,7 +34,9 @@ interface Props {
   isAuthEnabled: boolean;
   isAuthenticated: boolean;
   isMobile: boolean;
-  similarLinks: SearchLinksQuery['searchLinks']['nodes'];
+  similarLinks: NonNullable<
+    NonNullable<SearchLinksQuery['searchLinks']>['nodes']
+  >;
 }
 
 const LinkNotFound = ({
@@ -46,78 +48,66 @@ const LinkNotFound = ({
   isAuthenticated,
   similarLinks,
 }: Props) => (
-  <PageWithHeader
-    header={
-      <TopNavigation
-        logoname={logoname}
-        baseUrl={baseUrl}
-        isAuthEnabled={isAuthEnabled}
-        isAuthenticated={isAuthenticated}
-      />
-    }>
-    <Container padding="major-3">
-      <Flex
-        flexDirection="column"
-        textAlign="center"
-        justifyContent="center"
-        alignItems="center">
-        <Stack>
-          <Heading>No link found at go/{alias}</Heading>
+  <div className="min-h-screen">
+    <TopNavigation
+      logoname={logoname}
+      baseUrl={baseUrl}
+      isAuthEnabled={isAuthEnabled}
+      isAuthenticated={isAuthenticated}
+    />
+    <div className="mx-auto max-w-7xl px-6">
+      <div className="flex flex-col items-center justify-center text-center">
+        <div className="flex flex-col gap-4">
+          <h2 className="text-2xl font-bold">
+            No link found at go/{alias}
+          </h2>
 
           <NotFoundAnimation isMobile={isMobile} />
 
           {similarLinks.length !== 0 && (
             <>
-              <Heading use="h3">But there are other options:</Heading>
+              <h3 className="text-xl font-semibold">
+                But there are other options:
+              </h3>
 
-              <Table isResponsive responsiveBreakpoint="tablet">
-                <Table.Head>
-                  <Table.Row>
-                    <Table.HeadCell>Alias</Table.HeadCell>
-                    <Table.HeadCell>Destination</Table.HeadCell>
-                  </Table.Row>
-                </Table.Head>
-                <Table.Body>
-                  <>
+              <div className="w-full overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Alias</TableHead>
+                      <TableHead>Destination</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {similarLinks.map((link) => (
-                      <Table.Row key={link.id}>
-                        <Table.Cell>
-                          <Link
+                      <TableRow key={link.id}>
+                        <TableCell>
+                          <a
                             href={new URL(link.alias, baseUrl).href}
-                            style={{
-                              display: 'block',
-                              maxWidth: '350px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}>
+                            className="block max-w-[350px] truncate text-primary underline"
+                          >
                             {link.alias}
-                          </Link>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Link
+                          </a>
+                        </TableCell>
+                        <TableCell>
+                          <a
                             href={link.url}
-                            style={{
-                              display: 'block',
-                              maxWidth: '350px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}>
+                            className="block max-w-[350px] truncate text-primary underline"
+                          >
                             {link.url}
-                          </Link>
-                        </Table.Cell>
-                      </Table.Row>
+                          </a>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </>
-                </Table.Body>
-              </Table>
+                  </TableBody>
+                </Table>
+              </div>
             </>
           )}
-        </Stack>
-      </Flex>
-    </Container>
-  </PageWithHeader>
+        </div>
+      </div>
+    </div>
+  </div>
 );
 
 export default LinkNotFound;
@@ -163,7 +153,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       },
     });
 
-    const similarLinks = searchResults.data.searchLinks.nodes;
+    const similarLinks = searchResults.data.searchLinks?.nodes ?? [];
 
     return {
       props: {

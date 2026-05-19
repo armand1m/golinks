@@ -1,20 +1,16 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { GetServerSideProps, NextApiRequest } from 'next';
+import { toast } from 'sonner';
 
 import {
-  Modal,
-  Flex,
-  Box,
   Dialog,
-  PageWithHeader,
-  Spinner,
-  useToasts,
-  Container,
-  Button,
-  Stack,
-  Set,
-  FieldStack,
-} from 'bumbag';
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 import { TopNavigation } from '../components/TopNavigation';
 import * as LinkForm from '../components/LinkForm';
@@ -38,9 +34,28 @@ interface Props {
 }
 
 const Loader = () => (
-  <Flex alignX="center">
-    <Spinner size="medium" />
-  </Flex>
+  <div className="flex justify-center">
+    <svg
+      className="h-6 w-6 animate-spin text-primary"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  </div>
 );
 
 const Index: React.FC<Props> = ({
@@ -50,7 +65,7 @@ const Index: React.FC<Props> = ({
   isAuthEnabled,
   isAuthenticated,
 }) => {
-  const toasts = useToasts();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const [createLink, createLinkStatus] = useCreateLinkMutation();
   const [deleteLink] = useDeleteLinkMutation();
@@ -70,15 +85,13 @@ const Index: React.FC<Props> = ({
 
       await allLinks.refetch();
 
-      toasts.success({
-        title: 'Link Created',
-        message: 'Link was successfully created.',
+      toast.success('Link Created', {
+        description: 'Link was successfully created.',
       });
     } catch (error) {
       console.error('Failed to create Link, details: ', error);
-      toasts.danger({
-        title: 'Failed to create Link',
-        message: 'An unexpected error occurred.',
+      toast.error('Failed to create Link', {
+        description: 'An unexpected error occurred.',
       });
     }
   };
@@ -91,18 +104,16 @@ const Index: React.FC<Props> = ({
     try {
       await navigator.clipboard.writeText(linkUrl);
 
-      toasts.success({
-        title: 'Link Copied',
-        message: 'Link is in your clipboard.',
+      toast.success('Link Copied', {
+        description: 'Link is in your clipboard.',
       });
     } catch (error) {
       console.error(
         'Failed to copy Link to the clipboard, details: ',
         error
       );
-      toasts.danger({
-        title: 'Failed to copy Link',
-        message: 'An unexpected error occurred.',
+      toast.error('Failed to copy Link', {
+        description: 'An unexpected error occurred.',
       });
     }
   };
@@ -117,84 +128,70 @@ const Index: React.FC<Props> = ({
 
       await allLinks.refetch();
 
-      toasts.success({
-        title: 'Link Deleted',
-        message: 'Link was successfully deleted.',
+      toast.success('Link Deleted', {
+        description: 'Link was successfully deleted.',
       });
     } catch (error) {
       console.error('Failed to delete Link, details: ', error);
-      toasts.danger({
-        title: 'Failed to delete Link',
-        message: 'An unexpected error occurred.',
+      toast.error('Failed to delete Link', {
+        description: 'An unexpected error occurred.',
       });
     }
   };
 
   return (
-    <PageWithHeader
-      header={
-        <TopNavigation
-          logoname={logoname}
-          baseUrl={baseUrl}
-          isAuthEnabled={isAuthEnabled}
-          isAuthenticated={isAuthenticated}
-        />
-      }>
-      <Container padding="major-3">
-        <Stack>
-          <Set>
+    <div className="min-h-screen">
+      <TopNavigation
+        logoname={logoname}
+        baseUrl={baseUrl}
+        isAuthEnabled={isAuthEnabled}
+        isAuthenticated={isAuthenticated}
+      />
+      <div className="mx-auto max-w-7xl p-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-2">
             {canCreate && (
-              <Modal.State>
-                {(modal) => (
-                  <>
-                    <Dialog.Modal
-                      {...modal}
-                      baseId="create-link-modal"
-                      title="Create Link"
-                      standalone>
-                      <LinkForm.FormWrapper
-                        initialValues={undefined}
-                        onSubmit={async (values, form) => {
-                          await onCreateLink(values);
-                          modal.hide();
-                          form.resetForm();
-                        }}>
-                        <Dialog.Content>
-                          <Box>
-                            <Dialog.Header>
-                              <Dialog.Title>Create Link</Dialog.Title>
-                            </Dialog.Header>
-                            <FieldStack>
-                              <LinkForm.Fields />
-                            </FieldStack>
-                          </Box>
-                        </Dialog.Content>
-                        <Dialog.Footer justifyContent="flex-end">
-                          <Set>
-                            <Button type="reset" onClick={modal.hide}>
-                              Cancel
-                            </Button>
-                            <Button
-                              palette="primary"
-                              isLoading={
-                                createLinkStatus.loading ||
-                                allLinks.loading
-                              }
-                              type="submit">
-                              Create
-                            </Button>
-                          </Set>
-                        </Dialog.Footer>
-                      </LinkForm.FormWrapper>
-                    </Dialog.Modal>
-                    <Modal.Disclosure use={Button}>
-                      Create
-                    </Modal.Disclosure>
-                  </>
-                )}
-              </Modal.State>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>Create</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <LinkForm.FormWrapper
+                    initialValues={undefined}
+                    onSubmit={async (values, form) => {
+                      await onCreateLink(values);
+                      setDialogOpen(false);
+                      form.resetForm();
+                    }}
+                  >
+                    <DialogHeader>
+                      <DialogTitle>Create Link</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <LinkForm.Fields />
+                    </div>
+                    <DialogFooter className="flex justify-end gap-2">
+                      <Button
+                        type="reset"
+                        variant="outline"
+                        onClick={() => setDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={
+                          createLinkStatus.loading || allLinks.loading
+                        }
+                      >
+                        Create
+                      </Button>
+                    </DialogFooter>
+                  </LinkForm.FormWrapper>
+                </DialogContent>
+              </Dialog>
             )}
-          </Set>
+          </div>
 
           {allLinks.loading && <Loader />}
 
@@ -211,9 +208,9 @@ const Index: React.FC<Props> = ({
               />
             </Suspense>
           )}
-        </Stack>
-      </Container>
-    </PageWithHeader>
+        </div>
+      </div>
+    </div>
   );
 };
 

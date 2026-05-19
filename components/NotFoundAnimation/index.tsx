@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, useBreakpointValue } from 'bumbag';
 import Lottie from 'react-lottie';
 import animationData from './lottiefile.json';
 
@@ -17,28 +16,17 @@ interface Props {
 }
 
 export const NotFoundAnimation: React.FC<Props> = ({ isMobile }) => {
-  const width = isMobile
-    ? 250
-    : useBreakpointValue({
-        default: 600,
-        mobile: 250,
-      });
-
-  const height = isMobile
-    ? 150
-    : useBreakpointValue({
-        default: 350,
-        mobile: 150,
-      });
+  const width = isMobile ? 250 : 600;
+  const height = isMobile ? 150 : 350;
 
   return (
-    <Box marginBottom="major-0">
+    <div className="mb-0">
       <Lottie
         isClickToPauseDisabled
         options={defaultOptions}
         height={height}
         width={width}
       />
-    </Box>
+    </div>
   );
 };

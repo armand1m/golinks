@@ -41,3 +41,5 @@ __generated__
 
 # misc
 run-cloud.sh
+
+/.claude/

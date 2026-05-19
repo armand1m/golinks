@@ -1,6 +1,8 @@
-import { Link, InputField } from 'bumbag';
+import { useField } from 'formik';
 import * as Yup from 'yup';
-import { Formik, Form, Field, FormikHelpers } from 'formik';
+import { Formik, Form, FormikHelpers } from 'formik';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const CreateLinkSchema = Yup.object().shape({
   alias: Yup.string()
@@ -12,37 +14,54 @@ const CreateLinkSchema = Yup.object().shape({
     .required('An url is required.'),
 });
 
-interface Link {
+interface LinkFormValues {
   alias: string;
   url: string;
 }
 
 interface Props {
   onSubmit: (
-    values: Link,
-    helpers: FormikHelpers<Link>
+    values: LinkFormValues,
+    helpers: FormikHelpers<LinkFormValues>
   ) => void | Promise<void>;
-  initialValues?: Link;
+  initialValues?: LinkFormValues;
+  children?: React.ReactNode;
 }
+
+interface FormikInputProps {
+  name: string;
+  label: string;
+  type?: string;
+  required?: boolean;
+}
+
+const FormikInput: React.FC<FormikInputProps> = ({
+  name,
+  label,
+  type = 'text',
+  required,
+}) => {
+  const [field, meta] = useField({ name, type });
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={name}>
+        {label}
+        {required && ' *'}
+      </Label>
+      <Input id={name} type={type} {...field} />
+      {meta.touched && meta.error && (
+        <p className="text-sm text-destructive">{meta.error}</p>
+      )}
+    </div>
+  );
+};
 
 export const Fields = () => {
   return (
-    <>
-      <Field
-        component={InputField.Formik}
-        name="alias"
-        label="Alias"
-        required
-      />
-
-      <Field
-        component={InputField.Formik}
-        name="url"
-        label="Url"
-        type="url"
-        required
-      />
-    </>
+    <div className="flex flex-col gap-4">
+      <FormikInput name="alias" label="Alias" required />
+      <FormikInput name="url" label="Url" type="url" required />
+    </div>
   );
 };
 
@@ -60,7 +79,8 @@ export const FormWrapper: React.FC<Props> = ({
         onSubmit(values, form);
       }}
       validationSchema={CreateLinkSchema}
-      initialValues={initialValues}>
+      initialValues={initialValues}
+    >
       <Form>{children}</Form>
     </Formik>
   );
