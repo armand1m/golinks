@@ -39,8 +39,8 @@ spec:
         env:
         - name: PROTO
           value: ${PROTO}
-        - name: HOSTNAME
-          value: ${HOSTNAME}
+        - name: APP_HOSTNAME
+          value: ${APP_HOSTNAME}
         - name: LOGONAME
           value: ${LOGONAME}
         - name: AUTH0_ENABLED

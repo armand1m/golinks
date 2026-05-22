@@ -53,7 +53,7 @@ npx postgraphile \
 ## Architecture
 
 ### Tech Stack
-- **Frontend**: Next.js (Pages Router), React, Bumbag UI components, Apollo Client
+- **Frontend**: Next.js 15 (Pages Router), React 19, shadcn/ui + Tailwind CSS, Apollo Client
 - **Backend**: PostGraphile (auto-generates GraphQL API from PostgreSQL schema)
 - **Database**: PostgreSQL 12+ with Row Level Security (RLS)
 - **Auth**: Auth0 (optional, can be disabled via `AUTH0_ENABLED=false`)
@@ -65,7 +65,7 @@ npx postgraphile \
 
 **Row Level Security (RLS)**: PostgreSQL policies enforce permissions at the database level. The `has_permission()` function checks JWT claims passed via `pgSettings` in the PostGraphile configuration. Permissions include: `create:golinks`, `read:golinks`, `update:golinks`, `delete:golinks`.
 
-**GraphQL Code Generation**: `graphql-let` generates TypeScript types from `.graphql` files. Query/mutation files are in `lib/queries/` and `lib/mutations/`. Generated types are co-located with the graphql files.
+**GraphQL Code Generation**: `@graphql-codegen/cli` generates TypeScript types and TypedDocumentNodes from `.graphql` files. Config is in `codegen.ts`. Query/mutation files are in `lib/queries/` and `lib/mutations/`. Generated types are output to `lib/__generated__/graphql.ts`.
 
 **Dynamic Link Parameters**: Links support parameter substitution using `$1`, `$2` syntax. For example, alias `gh` with URL `https://github.com/$1/$2` allows `go/gh/owner/repo` to redirect to `https://github.com/owner/repo`. See `lib/features/link-parameters/`.
 
@@ -81,6 +81,7 @@ npx postgraphile \
   - `apollo.ts` - Apollo Client setup for SSR/CSR
   - `queries/` - GraphQL query definitions
   - `mutations/` - GraphQL mutation definitions
+  - `__generated__/` - Auto-generated TypeScript types from codegen
   - `features/link-parameters/` - URL parameter substitution logic
 - `pages/` - Next.js pages
   - `[...alias].tsx` - Catch-all route for link redirects

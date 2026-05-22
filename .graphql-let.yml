@@ -1,9 +1,0 @@
-schema: lib/type-defs.graphqls
-documents: '**/*.graphql'
-plugins:
-  - typescript
-  - typescript-operations
-  - typescript-react-apollo:
-      withHooks: true
-cacheDir: __generated__
-respectGitIgnore: true

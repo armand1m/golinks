@@ -1,17 +1,6 @@
 import * as Yup from 'yup';
 import { UserPermission, UserRole } from './permissions';
 
-interface Auth0Props {
-  domain: string;
-  audience: string;
-  clientId: string;
-  clientSecret: string;
-  cookieDomain: string;
-  cookieSecret: string;
-  redirectUrl: string;
-  postLogoutRedirectUrl: string;
-}
-
 const createErrorMessageForRequiredEnv = (
   env: string,
   possibleValues?: string[]
@@ -29,9 +18,38 @@ const createErrorMessageForRequiredEnv = (
   return `${begin} ${valuesMsg}`;
 };
 
-export type ConfigInterface = Yup.InferType<typeof ConfigSchema>;
+const auth0Schema = Yup.object({
+  domain: Yup.string().required(
+    createErrorMessageForRequiredEnv('AUTH0_DOMAIN')
+  ),
+  audience: Yup.string().required(
+    createErrorMessageForRequiredEnv('AUTH0_AUDIENCE')
+  ),
+  clientId: Yup.string().required(
+    createErrorMessageForRequiredEnv('AUTH0_CLIENT_ID')
+  ),
+  clientSecret: Yup.string().required(
+    createErrorMessageForRequiredEnv('AUTH0_CLIENT_SECRET')
+  ),
+  cookieDomain: Yup.string().required(
+    createErrorMessageForRequiredEnv('AUTH0_COOKIE_DOMAIN')
+  ),
+  cookieSecret: Yup.string().required(
+    createErrorMessageForRequiredEnv('AUTH0_COOKIE_SECRET')
+  ),
+  redirectUrl: Yup.string().required(
+    createErrorMessageForRequiredEnv('AUTH0_REDIRECT_URL')
+  ),
+  postLogoutRedirectUrl: Yup.string().required(
+    createErrorMessageForRequiredEnv(
+      'AUTH0_POST_LOGOUT_REDIRECT_URL'
+    )
+  ),
+});
 
-const ConfigSchema = Yup.object({
+export type Auth0Config = Yup.InferType<typeof auth0Schema>;
+
+const BaseConfigSchema = Yup.object({
   environment: Yup.string()
     .oneOf(['production', 'development'])
     .required(
@@ -45,8 +63,9 @@ const ConfigSchema = Yup.object({
       createErrorMessageForRequiredEnv('LOGONAME')
     ),
     hostname: Yup.string().required(
-      createErrorMessageForRequiredEnv('HOSTNAME')
+      createErrorMessageForRequiredEnv('APP_HOSTNAME')
     ),
+    port: Yup.number().default(3000),
     proto: Yup.string()
       .oneOf(['http', 'https'])
       .required(
@@ -55,8 +74,12 @@ const ConfigSchema = Yup.object({
     baseUrl: Yup.string().required(),
   }).required(),
   anonymous: Yup.object({
-    permissions: Yup.array<UserPermission>().required(),
-    roles: Yup.array<UserRole>().required(),
+    permissions: Yup.array(
+      Yup.string().oneOf(Object.values(UserPermission)).required() as Yup.Schema<UserPermission>
+    ).required(),
+    roles: Yup.array(
+      Yup.string().oneOf(Object.values(UserRole)).required() as Yup.Schema<UserRole>
+    ).required(),
   }).required(),
   features: Yup.object({
     auth0: Yup.boolean().required(
@@ -66,38 +89,6 @@ const ConfigSchema = Yup.object({
       ])
     ),
   }).required(),
-  auth0: Yup.object<Auth0Props>().when('features.auth0', {
-    is: true,
-    then: Yup.object({
-      domain: Yup.string().required(
-        createErrorMessageForRequiredEnv('AUTH0_DOMAIN')
-      ),
-      audience: Yup.string().required(
-        createErrorMessageForRequiredEnv('AUTH0_AUDIENCE')
-      ),
-      clientId: Yup.string().required(
-        createErrorMessageForRequiredEnv('AUTH0_CLIENT_ID')
-      ),
-      clientSecret: Yup.string().required(
-        createErrorMessageForRequiredEnv('AUTH0_CLIENT_SECRET')
-      ),
-      cookieDomain: Yup.string().required(
-        createErrorMessageForRequiredEnv('AUTH0_COOKIE_DOMAIN')
-      ),
-      cookieSecret: Yup.string().required(
-        createErrorMessageForRequiredEnv('AUTH0_COOKIE_SECRET')
-      ),
-      redirectUrl: Yup.string().required(
-        createErrorMessageForRequiredEnv('AUTH0_REDIRECT_URL')
-      ),
-      postLogoutRedirectUrl: Yup.string().required(
-        createErrorMessageForRequiredEnv(
-          'AUTH0_POST_LOGOUT_REDIRECT_URL'
-        )
-      ),
-    }).required(),
-    otherwise: Yup.object().optional(),
-  }),
   database: Yup.object({
     connectionString: Yup.string().required(
       createErrorMessageForRequiredEnv('DATABASE_CONNECTION_STRING')
@@ -108,11 +99,49 @@ const ConfigSchema = Yup.object({
   }).required(),
 }).required();
 
-const createConfig = () => {
+type BaseConfig = Yup.InferType<typeof BaseConfigSchema>;
+
+export type ConfigInterface = BaseConfig & {
+  auth0?: Auth0Config;
+};
+
+const validateConfig = (config: unknown, schema: Yup.AnySchema) => {
+  try {
+    return schema.validateSync(config, { abortEarly: false });
+  } catch (error) {
+    if (error instanceof Yup.ValidationError) {
+      const missing = error.inner
+        .filter((e) => e.type === 'required')
+        .map((e) => e.path)
+        .filter(Boolean);
+      const invalid = error.inner
+        .filter((e) => e.type !== 'required')
+        .map((e) => `${e.path}: ${e.message}`);
+
+      const parts: string[] = [
+        'Configuration validation failed:',
+      ];
+      if (missing.length > 0) {
+        parts.push(
+          `  Missing required env vars for: ${missing.join(', ')}`
+        );
+      }
+      if (invalid.length > 0) {
+        parts.push(...invalid.map((msg) => `  ${msg}`));
+      }
+
+      throw new Error(parts.join('\n'));
+    }
+    throw error;
+  }
+};
+
+const createConfig = (): ConfigInterface => {
   const {
     PROTO,
     LOGONAME,
-    HOSTNAME,
+    APP_HOSTNAME,
+    PORT,
     AUTH0_DOMAIN,
     AUTH0_AUDIENCE,
     AUTH0_CLIENT_ID,
@@ -143,44 +172,49 @@ const createConfig = () => {
     ? [UserRole.Viewer]
     : [UserRole.Viewer, UserRole.Editor];
 
-  const unsafeConfig = {
-    environment: ENVIRONMENT,
-    metadata: {
-      logoname: LOGONAME,
-      hostname: HOSTNAME,
-      proto: PROTO,
-      baseUrl: `${PROTO}://${HOSTNAME}`,
+  const baseConfig: BaseConfig = validateConfig(
+    {
+      environment: ENVIRONMENT,
+      metadata: {
+        logoname: LOGONAME,
+        hostname: APP_HOSTNAME,
+        port: PORT ? parseInt(PORT, 10) : undefined,
+        proto: PROTO,
+        baseUrl: `${PROTO}://${APP_HOSTNAME}${APP_HOSTNAME === 'localhost' && PORT ? `:${PORT}` : ''}`,
+      },
+      anonymous: {
+        permissions: ANONYMOUS_PERMISSIONS,
+        roles: ANONYMOUS_ROLES,
+      },
+      features: {
+        auth0: AUTH0_ENABLED,
+      },
+      database: {
+        connectionString: DATABASE_CONNECTION_STRING,
+        schema: DATABASE_SCHEMA,
+      },
     },
-    anonymous: {
-      permissions: ANONYMOUS_PERMISSIONS,
-      roles: ANONYMOUS_ROLES,
-    },
-    features: {
-      auth0: AUTH0_ENABLED,
-    },
-    auth0: AUTH0_ENABLED
-      ? {
-          domain: AUTH0_DOMAIN,
-          audience: AUTH0_AUDIENCE,
-          clientId: AUTH0_CLIENT_ID,
-          clientSecret: AUTH0_CLIENT_SECRET,
-          cookieDomain: AUTH0_COOKIE_DOMAIN,
-          cookieSecret: AUTH0_COOKIE_SECRET,
-          redirectUrl: AUTH0_REDIRECT_URL,
-          postLogoutRedirectUrl: AUTH0_POST_LOGOUT_REDIRECT_URL,
-        }
-      : undefined,
-    database: {
-      connectionString: DATABASE_CONNECTION_STRING,
-      schema: DATABASE_SCHEMA,
-    },
-  };
+    BaseConfigSchema,
+  );
 
-  const safeConfig = ConfigSchema.validateSync(unsafeConfig, {
-    abortEarly: false,
-  });
+  let auth0: Auth0Config | undefined;
+  if (AUTH0_ENABLED) {
+    auth0 = validateConfig(
+      {
+        domain: AUTH0_DOMAIN,
+        audience: AUTH0_AUDIENCE,
+        clientId: AUTH0_CLIENT_ID,
+        clientSecret: AUTH0_CLIENT_SECRET,
+        cookieDomain: AUTH0_COOKIE_DOMAIN,
+        cookieSecret: AUTH0_COOKIE_SECRET,
+        redirectUrl: AUTH0_REDIRECT_URL,
+        postLogoutRedirectUrl: AUTH0_POST_LOGOUT_REDIRECT_URL,
+      },
+      auth0Schema,
+    );
+  }
 
-  return safeConfig;
+  return { ...baseConfig, auth0 };
 };
 
 export const Config = createConfig();

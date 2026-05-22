@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from 'react';
 import { GetServerSideProps, NextApiRequest } from 'next';
 import { toast } from 'sonner';
+import { useQuery, useMutation } from '@apollo/client';
 
 import {
   Dialog,
@@ -16,10 +17,10 @@ import { TopNavigation } from '../components/TopNavigation';
 import * as LinkForm from '../components/LinkForm';
 import {
   Link,
-  useGetAllLinksQuery,
-} from '../lib/queries/getAllLinks.graphql';
-import { useCreateLinkMutation } from '../lib/mutations/createLink.graphql';
-import { useDeleteLinkMutation } from '../lib/mutations/deleteLink.graphql';
+  GetAllLinksDocument,
+  CreateLinkDocument,
+  DeleteLinkDocument,
+} from '../lib/__generated__/graphql';
 
 const LinkTable = lazy(() => import('../components/LinkTable'));
 
@@ -67,9 +68,9 @@ const Index: React.FC<Props> = ({
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [createLink, createLinkStatus] = useCreateLinkMutation();
-  const [deleteLink] = useDeleteLinkMutation();
-  const allLinks = useGetAllLinksQuery();
+  const [createLink, createLinkStatus] = useMutation(CreateLinkDocument);
+  const [deleteLink] = useMutation(DeleteLinkDocument);
+  const allLinks = useQuery(GetAllLinksDocument);
 
   const canEdit = claims.permissions.includes('update:golinks');
   const canCreate = claims.permissions.includes('create:golinks');
@@ -102,7 +103,18 @@ const Index: React.FC<Props> = ({
 
   const onShareLink = async (linkUrl: string) => {
     try {
-      await navigator.clipboard.writeText(linkUrl);
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(linkUrl);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = linkUrl;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
 
       toast.success('Link Copied', {
         description: 'Link is in your clipboard.',

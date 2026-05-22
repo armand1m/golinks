@@ -4,7 +4,7 @@ metadata:
   name: golinks
 spec:
   hosts:
-  - ${HOSTNAME}
+  - ${APP_HOSTNAME}
   gateways:
   - ${ISTIO_GATEWAY_NAME}
   http:

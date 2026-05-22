@@ -16,12 +16,10 @@ import {
   CreateLinkUsageMetricDocument,
   CreateLinkUsageMetricMutation,
   CreateLinkUsageMetricMutationVariables,
-} from '../lib/mutations/createLinkUsageMetric.graphql';
-import {
   SearchLinksDocument,
   SearchLinksQuery,
   SearchLinksQueryVariables,
-} from '../lib/queries/searchLinks.graphql';
+} from '../lib/__generated__/graphql';
 import {
   createRedirectUrl,
   findLinkRecursive,

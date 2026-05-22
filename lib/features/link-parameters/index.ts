@@ -3,7 +3,7 @@ import {
   GetLinkByAliasDocument,
   GetLinkByAliasQuery,
   GetLinkByAliasQueryVariables,
-} from '../../queries/getLinkByAlias.graphql';
+} from '../../__generated__/graphql';
 
 interface CreateRedirectUrlProps {
   linkUrl: string;

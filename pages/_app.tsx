@@ -3,7 +3,7 @@ import { AppProps } from 'next/app';
 import '../styles/globals.css';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
-import { ApolloProvider } from '@apollo/react-hooks';
+import { ApolloProvider } from '@apollo/client';
 import { useApollo } from '../lib/apollo';
 import { NextPageContext } from 'next';
 import { ThemeModeController } from '../components/ThemeModeController';

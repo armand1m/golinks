@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Pencil, Share2, Trash2 } from 'lucide-react';
-import { GetAllLinksQuery } from '../../lib/queries/getAllLinks.graphql';
+import { GetAllLinksQuery } from '../../lib/__generated__/graphql';
 import { LinkMetricUsageGraph } from '../LinkMetricUsageGraph';
 
 interface Props {

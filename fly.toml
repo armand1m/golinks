@@ -15,7 +15,7 @@ processes = []
   NODE_ENV="production"
   DATABASE_SCHEMA="public"
   PROTO="https"
-  HOSTNAME="go.d1m.dev"
+  APP_HOSTNAME="go.d1m.dev"
   LOGONAME="golinks"
 
 [experimental]

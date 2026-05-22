@@ -3,12 +3,12 @@ import {
   NextApiRequest,
   NextApiResponse,
 } from 'next';
-import { promisify } from 'util';
+import type { IncomingMessage, ServerResponse } from 'http';
 import jsonwebtoken from 'jsonwebtoken';
 import jwksRsa from 'jwks-rsa';
 import { initAuth0 } from '@auth0/nextjs-auth0';
-import { ISession } from '@auth0/nextjs-auth0/dist/session/session';
-import { ISignInWithAuth0 } from '@auth0/nextjs-auth0/dist/instance';
+import Session from '@auth0/nextjs-auth0/dist/session/session';
+import type { Auth0Server } from '@auth0/nextjs-auth0/dist/shared';
 import { Config } from './config';
 import { UserRole, UserPermission } from './permissions';
 
@@ -63,7 +63,7 @@ interface DecodedJwtToken {
 }
 
 export const getPermissionsFromSession = async (
-  session: ISession
+  session: Session
 ) => {
   if (!Config.auth0) {
     throw new Error(
@@ -90,7 +90,7 @@ export const getPermissionsFromSession = async (
 
   const client = getJwksClient();
 
-  const signingKey = await promisify(client.getSigningKey)(
+  const signingKey = await client.getSigningKey(
     decodedAccessToken.header.kid
   );
 
@@ -123,7 +123,8 @@ export const getPermissionsFromSession = async (
 };
 
 export const getUserClaimsFromRequest = async (
-  request: NextApiRequest
+  request: NextApiRequest | IncomingMessage,
+  response?: NextApiResponse | ServerResponse
 ) => {
   if (!Config.features.auth0) {
     return {
@@ -132,8 +133,10 @@ export const getUserClaimsFromRequest = async (
     };
   }
 
-  const auth0 = getAuth0();
-  const session = await auth0.getSession(request);
+  const auth0Instance = getAuth0();
+  const session = response
+    ? await auth0Instance.getSession(request as NextApiRequest, response as NextApiResponse)
+    : await auth0Instance.getSession(request as IncomingMessage, {} as ServerResponse);
 
   if (!session || !session.accessToken) {
     return {
@@ -150,7 +153,7 @@ export const getUserClaimsFromRequest = async (
   };
 };
 
-export let auth0: ISignInWithAuth0 | undefined;
+let auth0Instance: Omit<Auth0Server, 'withMiddlewareAuthRequired'> | undefined;
 
 export const getAuth0 = () => {
   if (!Config.features.auth0 || !Config.auth0) {
@@ -159,40 +162,44 @@ export const getAuth0 = () => {
     );
   }
 
-  if (auth0) {
-    return auth0;
+  if (auth0Instance) {
+    return auth0Instance;
   }
 
-  auth0 = initAuth0({
-    domain: Config.auth0.domain,
-    clientId: Config.auth0.clientId,
-    audience: Config.auth0.audience,
+  auth0Instance = initAuth0({
+    secret: Config.auth0.cookieSecret,
+    baseURL: Config.metadata.baseUrl,
+    clientID: Config.auth0.clientId,
     clientSecret: Config.auth0.clientSecret,
-    scope: 'openid email profile',
-    redirectUri: Config.auth0.redirectUrl,
-    postLogoutRedirectUri: Config.auth0.postLogoutRedirectUrl,
+    issuerBaseURL: `https://${Config.auth0.domain}`,
+    authorizationParams: {
+      response_type: 'code',
+      audience: Config.auth0.audience,
+      scope: 'openid email profile',
+    },
+    routes: {
+      callback: '/api/callback',
+      postLogoutRedirect: Config.auth0.postLogoutRedirectUrl,
+    },
     session: {
-      cookieSecret: Config.auth0.cookieSecret,
-      cookieLifetime: 60 * 60 * 8,
-      cookieDomain:
-        Config.environment === 'development'
-          ? 'localhost'
-          : Config.auth0.cookieDomain,
-      cookieSameSite: 'lax',
-      storeIdToken: true,
-      storeAccessToken: true,
-      storeRefreshToken: true,
+      rollingDuration: 60 * 60 * 8,
+      storeIDToken: true,
+      cookie: {
+        domain:
+          Config.environment === 'development'
+            ? 'localhost'
+            : Config.auth0.cookieDomain,
+        sameSite: 'lax',
+      },
     },
-    oidcClient: {
-      httpTimeout: 2500,
-      clockTolerance: 10000,
-    },
+    httpTimeout: 2500,
+    clockTolerance: 10000,
   });
 
-  return auth0;
+  return auth0Instance;
 };
 
-export type { IClaims } from '@auth0/nextjs-auth0/dist/session/session';
+export type { Claims } from '@auth0/nextjs-auth0/dist/session/session';
 
 export const withAuthentication =
   (handler: NextApiHandler) =>
