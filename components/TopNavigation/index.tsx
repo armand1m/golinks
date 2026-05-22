@@ -49,7 +49,7 @@ export const TopNavigation: React.FC<Props> = ({
             variant="link"
             onClick={() =>
               window.location.replace(
-                isAuthenticated ? '/api/logout' : '/api/login'
+                isAuthenticated ? '/auth/logout' : '/auth/login'
               )
             }
           >

@@ -4,8 +4,10 @@ query getAllLinks($first: Int = 50) {
       id
       url
       alias
-      linkUsageMetrics(first: 31, orderBy: [PRIMARY_KEY_DESC]) {
+      linkUsageMetrics {
         totalCount
+      }
+      recentUsageMetrics {
         nodes {
           accessedAt
         }

@@ -1,14 +1,9 @@
-import {
-  NextApiHandler,
-  NextApiRequest,
-  NextApiResponse,
-} from 'next';
-import type { IncomingMessage, ServerResponse } from 'http';
+import type { IncomingMessage } from 'http';
+import type { NextApiRequest } from 'next';
 import jsonwebtoken from 'jsonwebtoken';
 import jwksRsa from 'jwks-rsa';
-import { initAuth0 } from '@auth0/nextjs-auth0';
-import Session from '@auth0/nextjs-auth0/dist/session/session';
-import type { Auth0Server } from '@auth0/nextjs-auth0/dist/shared';
+import { Auth0Client } from '@auth0/nextjs-auth0/server';
+import type { SessionData } from '@auth0/nextjs-auth0/types';
 import { Config } from './config';
 import { UserRole, UserPermission } from './permissions';
 
@@ -53,17 +48,11 @@ interface DecodedJwtToken {
   azp: string;
   scope: string;
   permissions: string[];
-  /**
-   * This is set by a Custom Auth0 Rule
-   *
-   * For some reason, the key needs to be a URI
-   * otherwise Auth0 filters it out :shrug:
-   **/
   'https://user/roles': string[];
 }
 
 export const getPermissionsFromSession = async (
-  session: Session
+  session: SessionData
 ) => {
   if (!Config.auth0) {
     throw new Error(
@@ -72,15 +61,16 @@ export const getPermissionsFromSession = async (
   }
 
   const auth0Config = Config.auth0;
+  const accessToken = session.tokenSet.accessToken;
 
-  if (!session.accessToken) {
+  if (!accessToken) {
     throw new Error(
       'Session is missing an access token. This is an issue with your auth provider.'
     );
   }
 
   const decodedAccessToken = jsonwebtoken.decode(
-    session.accessToken,
+    accessToken,
     { complete: true }
   ) as DecodedAccessToken | undefined;
 
@@ -95,7 +85,7 @@ export const getPermissionsFromSession = async (
   );
 
   const token = jsonwebtoken.verify(
-    session.accessToken,
+    accessToken,
     signingKey.getPublicKey(),
     {
       audience: auth0Config.audience,
@@ -124,7 +114,6 @@ export const getPermissionsFromSession = async (
 
 export const getUserClaimsFromRequest = async (
   request: NextApiRequest | IncomingMessage,
-  response?: NextApiResponse | ServerResponse
 ) => {
   if (!Config.features.auth0) {
     return {
@@ -134,11 +123,9 @@ export const getUserClaimsFromRequest = async (
   }
 
   const auth0Instance = getAuth0();
-  const session = response
-    ? await auth0Instance.getSession(request as NextApiRequest, response as NextApiResponse)
-    : await auth0Instance.getSession(request as IncomingMessage, {} as ServerResponse);
+  const session = await auth0Instance.getSession(request);
 
-  if (!session || !session.accessToken) {
+  if (!session || !session.tokenSet.accessToken) {
     return {
       claims: Config.anonymous,
       user: null,
@@ -153,7 +140,7 @@ export const getUserClaimsFromRequest = async (
   };
 };
 
-let auth0Instance: Omit<Auth0Server, 'withMiddlewareAuthRequired'> | undefined;
+let auth0Instance: Auth0Client | undefined;
 
 export const getAuth0 = () => {
   if (!Config.features.auth0 || !Config.auth0) {
@@ -166,24 +153,22 @@ export const getAuth0 = () => {
     return auth0Instance;
   }
 
-  auth0Instance = initAuth0({
+  auth0Instance = new Auth0Client({
     secret: Config.auth0.cookieSecret,
-    baseURL: Config.metadata.baseUrl,
-    clientID: Config.auth0.clientId,
+    appBaseUrl: Config.metadata.baseUrl,
+    clientId: Config.auth0.clientId,
     clientSecret: Config.auth0.clientSecret,
-    issuerBaseURL: `https://${Config.auth0.domain}`,
-    authorizationParams: {
-      response_type: 'code',
+    domain: Config.auth0.domain,
+    authorizationParameters: {
       audience: Config.auth0.audience,
       scope: 'openid email profile',
     },
     routes: {
       callback: '/api/callback',
-      postLogoutRedirect: Config.auth0.postLogoutRedirectUrl,
     },
     session: {
-      rollingDuration: 60 * 60 * 8,
-      storeIDToken: true,
+      rolling: true,
+      inactivityDuration: 60 * 60 * 8,
       cookie: {
         domain:
           Config.environment === 'development'
@@ -193,29 +178,7 @@ export const getAuth0 = () => {
       },
     },
     httpTimeout: 2500,
-    clockTolerance: 10000,
   });
 
   return auth0Instance;
 };
-
-export type { Claims } from '@auth0/nextjs-auth0/dist/session/session';
-
-export const withAuthentication =
-  (handler: NextApiHandler) =>
-  async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-      if (!Config.features.auth0) {
-        return res.status(501).json({
-          message:
-            'Authentication is disabled in this application deployment.',
-        });
-      }
-
-      await handler(req, res);
-    } catch (error) {
-      console.error(error);
-      const anyError = error as any;
-      res.status(anyError.status ?? 500).end(anyError.message);
-    }
-  };

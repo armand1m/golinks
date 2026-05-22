@@ -79,7 +79,7 @@ export const LinkTable: React.FC<Props> = ({
               </TableCell>
               <TableCell className="text-center">
                 <LinkMetricUsageGraph
-                  linkUsageMetrics={link.linkUsageMetrics.nodes}
+                  linkUsageMetrics={link.recentUsageMetrics.nodes}
                 />
               </TableCell>
               <TableCell className="text-center">
