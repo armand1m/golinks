@@ -17,8 +17,12 @@ import { Pencil, Share2, Trash2 } from 'lucide-react';
 import { GetAllLinksQuery } from '../../lib/__generated__/graphql';
 import { LinkMetricUsageGraph } from '../LinkMetricUsageGraph';
 
+type LinkNode = NonNullable<
+  GetAllLinksQuery['links']
+>['nodes'][number];
+
 interface Props {
-  data: GetAllLinksQuery;
+  links: LinkNode[];
   baseUrl: string;
   isEditEnabled: boolean;
   isDeleteEnabled: boolean;
@@ -28,7 +32,7 @@ interface Props {
 }
 
 export const LinkTable: React.FC<Props> = ({
-  data,
+  links,
   baseUrl,
   isEditEnabled,
   isDeleteEnabled,
@@ -36,9 +40,7 @@ export const LinkTable: React.FC<Props> = ({
   onShare,
   onDelete,
 }) => {
-  const links = data?.links;
-
-  if (links?.nodes.length === 0) {
+  if (links.length === 0) {
     return (
       <div>
         <p>There are no golinks available.</p>
@@ -59,7 +61,7 @@ export const LinkTable: React.FC<Props> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {links?.nodes.map((link) => (
+          {links.map((link) => (
             <TableRow key={link.id}>
               <TableCell>
                 <a

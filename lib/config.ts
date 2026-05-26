@@ -41,9 +41,7 @@ const auth0Schema = Yup.object({
     createErrorMessageForRequiredEnv('AUTH0_REDIRECT_URL')
   ),
   postLogoutRedirectUrl: Yup.string().required(
-    createErrorMessageForRequiredEnv(
-      'AUTH0_POST_LOGOUT_REDIRECT_URL'
-    )
+    createErrorMessageForRequiredEnv('AUTH0_POST_LOGOUT_REDIRECT_URL')
   ),
 });
 
@@ -75,10 +73,14 @@ const BaseConfigSchema = Yup.object({
   }).required(),
   anonymous: Yup.object({
     permissions: Yup.array(
-      Yup.string().oneOf(Object.values(UserPermission)).required() as Yup.Schema<UserPermission>
+      Yup.string()
+        .oneOf(Object.values(UserPermission))
+        .required() as Yup.Schema<UserPermission>
     ).required(),
     roles: Yup.array(
-      Yup.string().oneOf(Object.values(UserRole)).required() as Yup.Schema<UserRole>
+      Yup.string()
+        .oneOf(Object.values(UserRole))
+        .required() as Yup.Schema<UserRole>
     ).required(),
   }).required(),
   features: Yup.object({
@@ -118,9 +120,7 @@ const validateConfig = (config: unknown, schema: Yup.AnySchema) => {
         .filter((e) => e.type !== 'required')
         .map((e) => `${e.path}: ${e.message}`);
 
-      const parts: string[] = [
-        'Configuration validation failed:',
-      ];
+      const parts: string[] = ['Configuration validation failed:'];
       if (missing.length > 0) {
         parts.push(
           `  Missing required env vars for: ${missing.join(', ')}`
@@ -194,7 +194,7 @@ const createConfig = (): ConfigInterface => {
         schema: DATABASE_SCHEMA,
       },
     },
-    BaseConfigSchema,
+    BaseConfigSchema
   );
 
   let auth0: Auth0Config | undefined;
@@ -210,7 +210,7 @@ const createConfig = (): ConfigInterface => {
         redirectUrl: AUTH0_REDIRECT_URL,
         postLogoutRedirectUrl: AUTH0_POST_LOGOUT_REDIRECT_URL,
       },
-      auth0Schema,
+      auth0Schema
     );
   }
 

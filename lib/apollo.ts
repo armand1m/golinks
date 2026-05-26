@@ -48,7 +48,7 @@ export function initializeApollo(initialState: any = null) {
   const _apolloClient =
     typeof window === 'undefined'
       ? createApolloClient()
-      : apolloClient ?? createApolloClient();
+      : (apolloClient ?? createApolloClient());
 
   // If your page has Next.js data fetching methods that use Apollo Client, the initial state
   // get hydrated here

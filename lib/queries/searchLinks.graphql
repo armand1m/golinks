@@ -4,6 +4,14 @@ query searchLinks($search: String!) {
       id
       url
       alias
+      linkUsageMetrics {
+        totalCount
+      }
+      recentUsageMetrics {
+        nodes {
+          accessedAt
+        }
+      }
     }
   }
 }

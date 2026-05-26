@@ -7,7 +7,8 @@ interface Props {
   linkUsageMetrics: Pick<LinkUsageMetric, 'accessedAt'>[];
 }
 
-const dateToString = (date: Date) => format(date, 'dd/MM/yyyy', { locale: nl });
+const dateToString = (date: Date) =>
+  format(date, 'dd/MM/yyyy', { locale: nl });
 
 interface Datum {
   count: number;
@@ -30,18 +31,21 @@ const convertMetricsToLineChartData = (
     ...days,
   ].sort(compareAsc);
 
-  const countPerDate = dates.map(dateToString).reduce((acc, date) => {
-    const accCount = acc[date]?.count;
-    const count = accCount === undefined ? 0 : accCount + 1;
+  const countPerDate = dates.map(dateToString).reduce(
+    (acc, date) => {
+      const accCount = acc[date]?.count;
+      const count = accCount === undefined ? 0 : accCount + 1;
 
-    return {
-      ...acc,
-      [date]: {
-        date,
-        count,
-      },
-    };
-  }, {} as Record<string, Datum>);
+      return {
+        ...acc,
+        [date]: {
+          date,
+          count,
+        },
+      };
+    },
+    {} as Record<string, Datum>
+  );
 
   return Object.values(countPerDate);
 };
@@ -66,7 +70,9 @@ const getThemeColors = () => {
 };
 
 const SparklineChart = ({ data }: { data: Datum[] }) => {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(
+    null
+  );
   const colors = getThemeColors();
 
   const width = 300;
@@ -83,7 +89,9 @@ const SparklineChart = ({ data }: { data: Datum[] }) => {
     y: marginTop + chartHeight - (d.count / maxVal) * chartHeight,
   }));
 
-  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const linePath = points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
+    .join(' ');
   const areaPath = `${linePath} L ${points[points.length - 1].x} ${marginTop + chartHeight} L ${points[0].x} ${marginTop + chartHeight} Z`;
 
   return (
@@ -95,12 +103,30 @@ const SparklineChart = ({ data }: { data: Datum[] }) => {
       onMouseLeave={() => setHoveredIndex(null)}
     >
       <defs>
-        <pattern id="area_pattern" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="4" stroke={colors.primaryLight} strokeWidth="1" />
+        <pattern
+          id="area_pattern"
+          width="4"
+          height="4"
+          patternUnits="userSpaceOnUse"
+          patternTransform="rotate(45)"
+        >
+          <line
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="4"
+            stroke={colors.primaryLight}
+            strokeWidth="1"
+          />
         </pattern>
       </defs>
       <path d={areaPath} fill="url(#area_pattern)" />
-      <path d={linePath} fill="none" stroke={colors.primary} strokeWidth="1.5" />
+      <path
+        d={linePath}
+        fill="none"
+        stroke={colors.primary}
+        strokeWidth="1.5"
+      />
       {hoveredIndex !== null && (
         <>
           <line
@@ -134,7 +160,9 @@ const SparklineChart = ({ data }: { data: Datum[] }) => {
           key={i}
           x={Math.max(p.x - 4, 0)}
           y={marginTop}
-          width={i < points.length - 1 ? points[i + 1].x - p.x + 4 : 8}
+          width={
+            i < points.length - 1 ? points[i + 1].x - p.x + 4 : 8
+          }
           height={chartHeight}
           fill="transparent"
           onMouseMove={() => setHoveredIndex(i)}

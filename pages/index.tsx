@@ -1,7 +1,7 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { GetServerSideProps, NextApiRequest } from 'next';
 import { toast } from 'sonner';
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation, useLazyQuery } from '@apollo/client';
 
 import {
   Dialog,
@@ -12,6 +12,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 import { TopNavigation } from '../components/TopNavigation';
 import * as LinkForm from '../components/LinkForm';
@@ -20,6 +22,7 @@ import {
   GetAllLinksDocument,
   CreateLinkDocument,
   DeleteLinkDocument,
+  SearchLinksDocument,
 } from '../lib/__generated__/graphql';
 
 const LinkTable = lazy(() => import('../components/LinkTable'));
@@ -67,10 +70,46 @@ const Index: React.FC<Props> = ({
   isAuthenticated,
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceTimerRef =
+    useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const [createLink, createLinkStatus] = useMutation(CreateLinkDocument);
+  const [createLink, createLinkStatus] = useMutation(
+    CreateLinkDocument
+  );
   const [deleteLink] = useMutation(DeleteLinkDocument);
   const allLinks = useQuery(GetAllLinksDocument);
+  const [searchLinks, searchResults] = useLazyQuery(
+    SearchLinksDocument
+  );
+
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    if (searchTerm.trim() === '') {
+      setDebouncedSearch('');
+      return;
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (debouncedSearch) {
+      searchLinks({ variables: { search: debouncedSearch } });
+    }
+  }, [debouncedSearch, searchLinks]);
 
   const canEdit = claims.permissions.includes('update:golinks');
   const canCreate = claims.permissions.includes('create:golinks');
@@ -85,6 +124,10 @@ const Index: React.FC<Props> = ({
       });
 
       await allLinks.refetch();
+
+      if (debouncedSearch) {
+        searchLinks({ variables: { search: debouncedSearch } });
+      }
 
       toast.success('Link Created', {
         description: 'Link was successfully created.',
@@ -140,6 +183,10 @@ const Index: React.FC<Props> = ({
 
       await allLinks.refetch();
 
+      if (debouncedSearch) {
+        searchLinks({ variables: { search: debouncedSearch } });
+      }
+
       toast.success('Link Deleted', {
         description: 'Link was successfully deleted.',
       });
@@ -162,6 +209,15 @@ const Index: React.FC<Props> = ({
       <div className="mx-auto max-w-7xl p-6">
         <div className="flex flex-col gap-4">
           <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search links..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
             {canCreate && (
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
@@ -205,13 +261,17 @@ const Index: React.FC<Props> = ({
             )}
           </div>
 
-          {allLinks.loading && <Loader />}
+          {(allLinks.loading || searchResults.loading) && <Loader />}
 
-          {allLinks.data !== undefined && allLinks.data !== null && (
+          {!allLinks.loading && (
             <Suspense fallback={<Loader />}>
               <LinkTable
                 baseUrl={baseUrl}
-                data={allLinks.data}
+                links={
+                  debouncedSearch
+                    ? (searchResults.data?.searchLinks?.nodes ?? [])
+                    : (allLinks.data?.links?.nodes ?? [])
+                }
                 isEditEnabled={canEdit}
                 isDeleteEnabled={canDelete}
                 onEdit={onEditLink}

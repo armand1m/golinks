@@ -1,7 +1,7 @@
-import type { NextRequest } from "next/server";
-import { Auth0Client } from "@auth0/nextjs-auth0/server";
+import type { NextRequest } from 'next/server';
+import { Auth0Client } from '@auth0/nextjs-auth0/server';
 
-const isAuth0Enabled = process.env.AUTH0_ENABLED === "true";
+const isAuth0Enabled = process.env.AUTH0_ENABLED === 'true';
 
 let auth0Client: Auth0Client | undefined;
 
@@ -16,20 +16,20 @@ function getAuth0Client() {
     domain: process.env.AUTH0_DOMAIN,
     authorizationParameters: {
       audience: process.env.AUTH0_AUDIENCE,
-      scope: "openid email profile",
+      scope: 'openid email profile',
     },
     routes: {
-      callback: "/api/callback",
+      callback: '/api/callback',
     },
     session: {
       rolling: true,
       inactivityDuration: 60 * 60 * 8,
       cookie: {
         domain:
-          process.env.NODE_ENV !== "production"
-            ? "localhost"
+          process.env.NODE_ENV !== 'production'
+            ? 'localhost'
             : process.env.AUTH0_COOKIE_DOMAIN,
-        sameSite: "lax",
+        sameSite: 'lax',
       },
     },
     httpTimeout: 2500,
@@ -48,6 +48,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
   ],
 };

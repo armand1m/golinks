@@ -69,10 +69,9 @@ export const getPermissionsFromSession = async (
     );
   }
 
-  const decodedAccessToken = jsonwebtoken.decode(
-    accessToken,
-    { complete: true }
-  ) as DecodedAccessToken | undefined;
+  const decodedAccessToken = jsonwebtoken.decode(accessToken, {
+    complete: true,
+  }) as DecodedAccessToken | undefined;
 
   if (!decodedAccessToken) {
     throw new Error('Failed to decode token.');
@@ -113,7 +112,7 @@ export const getPermissionsFromSession = async (
 };
 
 export const getUserClaimsFromRequest = async (
-  request: NextApiRequest | IncomingMessage,
+  request: NextApiRequest | IncomingMessage
 ) => {
   if (!Config.features.auth0) {
     return {
