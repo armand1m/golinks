@@ -66,7 +66,7 @@ Contributions for the following are very welcome.
 - [ ] Private Links
 - [ ] Temporary Links
 - [ ] Random Alias
-- [ ] Help section
+- [x] Help section
 - [ ] Chrome Plugin
 
 ## Usage
