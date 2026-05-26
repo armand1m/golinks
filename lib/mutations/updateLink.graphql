@@ -1,0 +1,10 @@
+mutation UpdateLink($id: UUID!, $patch: LinkPatch!) {
+  updateLink(input: {id: $id, patch: $patch}) {
+    link {
+      id
+      url
+      alias
+      createdAt
+    }
+  }
+}

@@ -22,6 +22,7 @@ import {
   GetAllLinksDocument,
   CreateLinkDocument,
   DeleteLinkDocument,
+  UpdateLinkDocument,
   SearchLinksDocument,
 } from '../lib/__generated__/graphql';
 
@@ -70,6 +71,8 @@ const Index: React.FC<Props> = ({
   isAuthenticated,
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingLink, setEditingLink] = useState<Link | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const debounceTimerRef =
@@ -78,6 +81,7 @@ const Index: React.FC<Props> = ({
   const [createLink, createLinkStatus] = useMutation(
     CreateLinkDocument
   );
+  const [updateLink] = useMutation(UpdateLinkDocument);
   const [deleteLink] = useMutation(DeleteLinkDocument);
   const allLinks = useQuery(GetAllLinksDocument);
   const [searchLinks, searchResults] = useLazyQuery(
@@ -140,8 +144,43 @@ const Index: React.FC<Props> = ({
     }
   };
 
-  const onEditLink = async (_linkId: string) => {
-    /** Open EditLinkForm with data prefilled. */
+  const onEditLink = async (linkId: string) => {
+    const links = debouncedSearch
+      ? (searchResults.data?.searchLinks?.nodes ?? [])
+      : (allLinks.data?.links?.nodes ?? []);
+    const link = links.find((l: { id: string }) => l.id === linkId);
+    if (!link) return;
+    setEditingLink(link);
+    setEditDialogOpen(true);
+  };
+
+  const onUpdateLink = async (
+    values: Pick<Link, 'alias' | 'url'>
+  ) => {
+    if (!editingLink) return;
+    try {
+      await updateLink({
+        variables: {
+          id: editingLink.id,
+          patch: { alias: values.alias, url: values.url },
+        },
+      });
+
+      await allLinks.refetch();
+
+      if (debouncedSearch) {
+        searchLinks({ variables: { search: debouncedSearch } });
+      }
+
+      toast.success('Link Updated', {
+        description: 'Link was successfully updated.',
+      });
+    } catch (error) {
+      console.error('Failed to update Link, details: ', error);
+      toast.error('Failed to update Link', {
+        description: 'An unexpected error occurred.',
+      });
+    }
   };
 
   const onShareLink = async (linkUrl: string) => {
@@ -259,6 +298,54 @@ const Index: React.FC<Props> = ({
                 </DialogContent>
               </Dialog>
             )}
+            <Dialog
+              open={editDialogOpen}
+              onOpenChange={(open) => {
+                setEditDialogOpen(open);
+                if (!open) setEditingLink(null);
+              }}
+            >
+              <DialogContent>
+                <LinkForm.FormWrapper
+                  initialValues={
+                    editingLink
+                      ? {
+                          alias: editingLink.alias,
+                          url: editingLink.url,
+                        }
+                      : undefined
+                  }
+                  onSubmit={async (values, form) => {
+                    await onUpdateLink(values);
+                    setEditDialogOpen(false);
+                    setEditingLink(null);
+                    form.resetForm();
+                  }}
+                >
+                  <DialogHeader>
+                    <DialogTitle>Edit Link</DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <LinkForm.Fields />
+                  </div>
+                  <DialogFooter className="flex justify-end gap-2">
+                    <Button
+                      type="reset"
+                      variant="outline"
+                      onClick={() => {
+                        setEditDialogOpen(false);
+                        setEditingLink(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={allLinks.loading}>
+                      Save
+                    </Button>
+                  </DialogFooter>
+                </LinkForm.FormWrapper>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {(allLinks.loading || searchResults.loading) && <Loader />}

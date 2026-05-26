@@ -45,7 +45,7 @@ Contributions for the following are very welcome.
 
 - [x] Create Links
 - [x] Delete Links
-- [ ] Edit Links
+- [x] Edit Links
 - [x] Redirect Links
 - [x] Auth
   - [x] Can be disabled
