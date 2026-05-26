@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Pencil, Share2, Trash2 } from 'lucide-react';
+import { Pencil, Share2, Trash2, Lock } from 'lucide-react';
 import { GetAllLinksQuery } from '../../lib/__generated__/graphql';
 import { LinkMetricUsageGraph } from '../LinkMetricUsageGraph';
 
@@ -69,6 +69,9 @@ export const LinkTable: React.FC<Props> = ({
                   className="block max-w-[350px] truncate text-primary underline"
                 >
                   {link.alias}
+                  {link.isPrivate && (
+                    <Lock className="ml-1.5 inline h-3 w-3 text-muted-foreground" />
+                  )}
                 </a>
               </TableCell>
               <TableCell>

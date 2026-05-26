@@ -4,6 +4,14 @@ query getAllLinks($first: Int = 50) {
       id
       url
       alias
+      isPrivate
+      createdByEmail
+      linkAllowedEmails {
+        nodes {
+          id
+          email
+        }
+      }
       linkUsageMetrics {
         totalCount
       }

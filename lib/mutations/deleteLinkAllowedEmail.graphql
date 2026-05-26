@@ -1,0 +1,5 @@
+mutation DeleteLinkAllowedEmail($id: UUID!) {
+  deleteLinkAllowedEmail(input: {id: $id}) {
+    deletedLinkAllowedEmailNodeId
+  }
+}

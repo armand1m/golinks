@@ -1,9 +1,11 @@
-mutation CreateLink($alias: String!, $url: String!) {
-  createLink(input: {link: {alias: $alias, url: $url}}) {
+mutation CreateLink($alias: String!, $url: String!, $isPrivate: Boolean, $createdByEmail: String) {
+  createLink(input: {link: {alias: $alias, url: $url, isPrivate: $isPrivate, createdByEmail: $createdByEmail}}) {
     link {
       id,
       url,
       alias,
+      isPrivate,
+      createdByEmail,
       createdAt,
     }
   }

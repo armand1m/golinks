@@ -18,15 +18,19 @@ const commonProperties: Partial<PostGraphileOptions> = {
   legacyRelations: 'omit',
   enableQueryBatching: true,
   pgSettings: async (req) => {
-    const { claims } = await getUserClaimsFromRequest(
+    const { claims, user } = await getUserClaimsFromRequest(
       req as NextApiRequest
     );
 
-    const settings = {
+    const settings: Record<string, string> = {
       role: 'postgraphile',
       'jwt.claims.roles': JSON.stringify(claims.roles),
       'jwt.claims.permissions': JSON.stringify(claims.permissions),
     };
+
+    if (user?.email) {
+      settings['jwt.claims.email'] = user.email;
+    }
 
     return settings;
   },

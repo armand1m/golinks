@@ -4,6 +4,7 @@ query searchLinks($search: String!) {
       id
       url
       alias
+      isPrivate
       linkUsageMetrics {
         totalCount
       }

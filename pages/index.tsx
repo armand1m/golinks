@@ -21,6 +21,8 @@ import {
   Link,
   GetAllLinksDocument,
   CreateLinkDocument,
+  CreateLinkAllowedEmailDocument,
+  DeleteLinkAllowedEmailDocument,
   DeleteLinkDocument,
   UpdateLinkDocument,
   SearchLinksDocument,
@@ -33,6 +35,7 @@ interface Props {
   baseUrl: string;
   isAuthEnabled: boolean;
   isAuthenticated: boolean;
+  userEmail?: string | null;
   claims: {
     permissions: string[];
   };
@@ -69,10 +72,14 @@ const Index: React.FC<Props> = ({
   claims,
   isAuthEnabled,
   isAuthenticated,
+  userEmail,
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<Link | null>(null);
+  const [editAllowedEmails, setEditAllowedEmails] = useState<
+    Array<{ id: string; email: string }>
+  >([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const debounceTimerRef =
@@ -83,6 +90,12 @@ const Index: React.FC<Props> = ({
   );
   const [updateLink] = useMutation(UpdateLinkDocument);
   const [deleteLink] = useMutation(DeleteLinkDocument);
+  const [createLinkAllowedEmail] = useMutation(
+    CreateLinkAllowedEmailDocument
+  );
+  const [deleteLinkAllowedEmail] = useMutation(
+    DeleteLinkAllowedEmailDocument
+  );
   const allLinks = useQuery(GetAllLinksDocument);
   const [searchLinks, searchResults] = useLazyQuery(
     SearchLinksDocument
@@ -120,11 +133,16 @@ const Index: React.FC<Props> = ({
   const canDelete = claims.permissions.includes('delete:golinks');
 
   const onCreateLink = async (
-    values: Pick<Link, 'alias' | 'url'>
+    values: Pick<Link, 'alias' | 'url'> & { isPrivate: boolean }
   ) => {
     try {
       await createLink({
-        variables: values,
+        variables: {
+          alias: values.alias,
+          url: values.url,
+          isPrivate: values.isPrivate,
+          createdByEmail: values.isPrivate ? userEmail : undefined,
+        },
       });
 
       await allLinks.refetch();
@@ -151,18 +169,35 @@ const Index: React.FC<Props> = ({
     const link = links.find((l: { id: string }) => l.id === linkId);
     if (!link) return;
     setEditingLink(link);
+    setEditAllowedEmails(
+      (link as any).linkAllowedEmails?.nodes ?? []
+    );
     setEditDialogOpen(true);
   };
 
   const onUpdateLink = async (
-    values: Pick<Link, 'alias' | 'url'>
+    values: Pick<Link, 'alias' | 'url'> & { isPrivate: boolean }
   ) => {
     if (!editingLink) return;
     try {
+      const patch: Record<string, any> = {
+        alias: values.alias,
+        url: values.url,
+      };
+      if (values.isPrivate !== (editingLink as any).isPrivate) {
+        patch.isPrivate = values.isPrivate;
+        if (
+          values.isPrivate &&
+          !(editingLink as any).createdByEmail
+        ) {
+          patch.createdByEmail = userEmail;
+        }
+      }
+
       await updateLink({
         variables: {
           id: editingLink.id,
-          patch: { alias: values.alias, url: values.url },
+          patch,
         },
       });
 
@@ -275,7 +310,10 @@ const Index: React.FC<Props> = ({
                       <DialogTitle>Create Link</DialogTitle>
                     </DialogHeader>
                     <div className="py-4">
-                      <LinkForm.Fields />
+                      <LinkForm.Fields
+                        isAuthEnabled={isAuthEnabled}
+                        isAuthenticated={isAuthenticated}
+                      />
                     </div>
                     <DialogFooter className="flex justify-end gap-2">
                       <Button
@@ -312,6 +350,8 @@ const Index: React.FC<Props> = ({
                       ? {
                           alias: editingLink.alias,
                           url: editingLink.url,
+                          isPrivate:
+                            (editingLink as any).isPrivate ?? false,
                         }
                       : undefined
                   }
@@ -319,6 +359,7 @@ const Index: React.FC<Props> = ({
                     await onUpdateLink(values);
                     setEditDialogOpen(false);
                     setEditingLink(null);
+                    setEditAllowedEmails([]);
                     form.resetForm();
                   }}
                 >
@@ -326,7 +367,64 @@ const Index: React.FC<Props> = ({
                     <DialogTitle>Edit Link</DialogTitle>
                   </DialogHeader>
                   <div className="py-4">
-                    <LinkForm.Fields />
+                    <LinkForm.Fields
+                      isAuthEnabled={isAuthEnabled}
+                      isAuthenticated={isAuthenticated}
+                      linkAllowedEmails={editAllowedEmails}
+                      onAddAllowedEmail={async (email) => {
+                        if (!editingLink) return;
+                        try {
+                          const result = await createLinkAllowedEmail(
+                            {
+                              variables: {
+                                linkId: editingLink.id,
+                                email,
+                              },
+                            }
+                          );
+                          const newEntry =
+                            result.data?.createLinkAllowedEmail
+                              ?.linkAllowedEmail;
+                          if (newEntry) {
+                            setEditAllowedEmails((prev) => [
+                              ...prev,
+                              {
+                                id: newEntry.id,
+                                email: newEntry.email,
+                              },
+                            ]);
+                          }
+                        } catch (error) {
+                          console.error(
+                            'Failed to add allowed email:',
+                            error
+                          );
+                          toast.error('Failed to add email', {
+                            description:
+                              'An unexpected error occurred.',
+                          });
+                        }
+                      }}
+                      onRemoveAllowedEmail={async (emailId) => {
+                        try {
+                          await deleteLinkAllowedEmail({
+                            variables: { id: emailId },
+                          });
+                          setEditAllowedEmails((prev) =>
+                            prev.filter((e) => e.id !== emailId)
+                          );
+                        } catch (error) {
+                          console.error(
+                            'Failed to remove allowed email:',
+                            error
+                          );
+                          toast.error('Failed to remove email', {
+                            description:
+                              'An unexpected error occurred.',
+                          });
+                        }
+                      }}
+                    />
                   </div>
                   <DialogFooter className="flex justify-end gap-2">
                     <Button
@@ -394,6 +492,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       baseUrl,
       isAuthEnabled,
       isAuthenticated,
+      userEmail: user?.email || null,
     },
   };
 };

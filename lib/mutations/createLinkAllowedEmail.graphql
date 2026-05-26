@@ -1,0 +1,8 @@
+mutation CreateLinkAllowedEmail($linkId: UUID!, $email: String!) {
+  createLinkAllowedEmail(input: {linkAllowedEmail: {linkId: $linkId, email: $email}}) {
+    linkAllowedEmail {
+      id
+      email
+    }
+  }
+}

@@ -4,6 +4,8 @@ mutation UpdateLink($id: UUID!, $patch: LinkPatch!) {
       id
       url
       alias
+      isPrivate
+      createdByEmail
       createdAt
     }
   }
