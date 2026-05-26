@@ -14,7 +14,7 @@
 
 This application is deployed at https://go.d1m.dev. Signup is enabled for view only mode.
 
-This is an implementation of Go Links powered by [Next.js](https://nextjs.org/), [GraphQL](http://graphql.org/) through [PostGraphile](https://www.graphile.org/postgraphile/) and [Auth0](https://www.auth0.com).
+This is an implementation of Go Links powered by [Next.js 15](https://nextjs.org/), [React 19](https://react.dev/), [GraphQL](http://graphql.org/) through [PostGraphile](https://www.graphile.org/postgraphile/), [shadcn/ui](https://ui.shadcn.com/) and [Auth0](https://www.auth0.com).
 
 In short, Go Links are a type of URL Shorteners. You can create an alias that points to an URL and will redirect the user to that URL.
 
