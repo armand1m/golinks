@@ -28,6 +28,21 @@ function renderNavigation(initialThemeMode: ThemeMode) {
   );
 }
 
+describe('TopNavigation help link', () => {
+  beforeEach(() => {
+    clearThemeCookie();
+    document.documentElement.className = '';
+    window.localStorage.clear();
+  });
+
+  it('renders a help link pointing to /help', () => {
+    renderNavigation('light');
+    const helpLink = screen.getByRole('link', { name: 'Help' });
+    expect(helpLink).toBeInTheDocument();
+    expect(helpLink).toHaveAttribute('href', '/help');
+  });
+});
+
 describe('TopNavigation theme toggle', () => {
   beforeEach(() => {
     clearThemeCookie();

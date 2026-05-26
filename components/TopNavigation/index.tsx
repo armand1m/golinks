@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { LogIn, LogOut } from 'lucide-react';
+import { HelpCircle, LogIn, LogOut } from 'lucide-react';
 
 interface Props {
   baseUrl: string;
@@ -31,6 +31,11 @@ export const TopNavigation: React.FC<Props> = ({
         </a>
       </div>
       <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" asChild>
+          <a href="/help" aria-label="Help">
+            <HelpCircle className="h-5 w-5" />
+          </a>
+        </Button>
         <Button
           aria-label={`Switch to ${
             theme === 'dark' ? 'light' : 'dark'
