@@ -16,12 +16,14 @@ export const TopNavigation: React.FC<Props> = ({
   isAuthenticated,
   isAuthEnabled,
 }) => {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const isDark = resolvedTheme === 'dark';
 
   return (
     <nav className="flex items-center justify-between border-b px-6 py-3">
@@ -37,33 +39,26 @@ export const TopNavigation: React.FC<Props> = ({
           </a>
         </Button>
         <Button
-          aria-label={`Switch to ${
-            theme === 'dark' ? 'light' : 'dark'
-          } mode`}
+          aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
           variant="ghost"
           size="icon"
-          onClick={() =>
-            setTheme(theme === 'dark' ? 'light' : 'dark')
-          }
+          onClick={() => setTheme(isDark ? 'light' : 'dark')}
           suppressHydrationWarning
         >
-          {mounted ? (theme === 'dark' ? '☀️' : '🌙') : '🌙'}
+          {mounted ? (isDark ? '☀️' : '🌙') : '🌙'}
         </Button>
         {isAuthEnabled && (
-          <Button
-            variant="link"
-            onClick={() =>
-              window.location.replace(
-                isAuthenticated ? '/auth/logout' : '/auth/login'
-              )
-            }
-          >
-            {isAuthenticated ? (
-              <LogOut className="mr-2 h-4 w-4" />
-            ) : (
-              <LogIn className="mr-2 h-4 w-4" />
-            )}
-            {isAuthenticated ? 'Logout' : 'Login'}
+          <Button variant="link" asChild>
+            <a
+              href={isAuthenticated ? '/auth/logout' : '/auth/login'}
+            >
+              {isAuthenticated ? (
+                <LogOut className="mr-2 h-4 w-4" />
+              ) : (
+                <LogIn className="mr-2 h-4 w-4" />
+              )}
+              {isAuthenticated ? 'Logout' : 'Login'}
+            </a>
           </Button>
         )}
       </div>

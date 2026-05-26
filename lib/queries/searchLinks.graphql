@@ -5,6 +5,13 @@ query searchLinks($search: String!) {
       url
       alias
       isPrivate
+      createdByEmail
+      linkAllowedEmails {
+        nodes {
+          id
+          email
+        }
+      }
       linkUsageMetrics {
         totalCount
       }
