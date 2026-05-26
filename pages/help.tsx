@@ -1,13 +1,12 @@
 import { GetServerSideProps } from 'next';
-import { NextApiRequest } from 'next';
 import { TopNavigation } from '@/components/TopNavigation';
-
-interface Props {
-  logoname: string;
-  baseUrl: string;
-  isAuthEnabled: boolean;
-  isAuthenticated: boolean;
-}
+import { InlineCode } from '@/components/InlineCode';
+import { CodeBlock } from '@/components/CodeBlock';
+import { SectionHeading } from '@/components/SectionHeading';
+import {
+  getCommonPageProps,
+  CommonPageProps,
+} from '@/lib/utils/get-common-server-side-props';
 
 const sections = [
   { id: 'creating-a-link', title: 'Creating a Link' },
@@ -24,7 +23,7 @@ export default function Help({
   baseUrl,
   isAuthEnabled,
   isAuthenticated,
-}: Props) {
+}: CommonPageProps) {
   return (
     <div className="min-h-screen">
       <TopNavigation
@@ -56,9 +55,7 @@ export default function Help({
             id="creating-a-link"
             className="flex flex-col gap-3"
           >
-            <h2 className="text-xl font-semibold border-b pb-2">
-              Creating a Link
-            </h2>
+            <SectionHeading>Creating a Link</SectionHeading>
             <p className="text-muted-foreground">
               A link consists of a short <strong>alias</strong> and a
               destination <strong>URL</strong>. Click the{' '}
@@ -67,17 +64,9 @@ export default function Help({
             </p>
             <p className="text-muted-foreground">
               For example, creating a link with alias{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                google
-              </code>{' '}
-              and URL{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                https://google.com
-              </code>{' '}
-              means navigating to{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                {baseUrl}/google
-              </code>{' '}
+              <InlineCode>google</InlineCode> and URL{' '}
+              <InlineCode>https://google.com</InlineCode> means
+              navigating to <InlineCode>{baseUrl}/google</InlineCode>{' '}
               will redirect you there.
             </p>
           </section>
@@ -86,9 +75,7 @@ export default function Help({
             id="editing-deleting-links"
             className="flex flex-col gap-3"
           >
-            <h2 className="text-xl font-semibold border-b pb-2">
-              Editing & Deleting Links
-            </h2>
+            <SectionHeading>Editing & Deleting Links</SectionHeading>
             <p className="text-muted-foreground">
               Each link in the table has action buttons on the right
               side. Click the pencil icon to edit the alias or URL.
@@ -100,48 +87,25 @@ export default function Help({
             id="dynamic-link-parameters"
             className="flex flex-col gap-3"
           >
-            <h2 className="text-xl font-semibold border-b pb-2">
-              Dynamic Link Parameters
-            </h2>
+            <SectionHeading>Dynamic Link Parameters</SectionHeading>
             <p className="text-muted-foreground">
-              Links support{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                $1
-              </code>
-              ,{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                $2
-              </code>
-              , etc. placeholders in the URL. Extra path segments
-              after the alias are substituted into these positions.
+              Links support <InlineCode>$1</InlineCode>,{' '}
+              <InlineCode>$2</InlineCode>, etc. placeholders in the
+              URL. Extra path segments after the alias are substituted
+              into these positions.
             </p>
             <p className="text-muted-foreground">
               For example, a link with alias{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                gh
-              </code>{' '}
-              and URL{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                https://github.com/$1/$2
-              </code>{' '}
-              means:
+              <InlineCode>gh</InlineCode> and URL{' '}
+              <InlineCode>https://github.com/$1/$2</InlineCode> means:
             </p>
-            <pre className="rounded-lg bg-muted p-4 overflow-x-auto text-sm">
-              <code>
-                {baseUrl}/gh/owner/repo →
-                https://github.com/owner/repo
-              </code>
-            </pre>
+            <CodeBlock>
+              {baseUrl}/gh/owner/repo → https://github.com/owner/repo
+            </CodeBlock>
             <p className="text-muted-foreground">
               Aliases can also contain slashes for namespacing, e.g.
-              alias{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                docs/api
-              </code>{' '}
-              with URL{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                https://docs.example.com/api/$1
-              </code>
+              alias <InlineCode>docs/api</InlineCode> with URL{' '}
+              <InlineCode>https://docs.example.com/api/$1</InlineCode>
               .
             </p>
 
@@ -152,16 +116,14 @@ export default function Help({
               Create a link pointing to a GitHub gist raw URL with
               parameters, then use it as an executable script:
             </p>
-            <pre className="rounded-lg bg-muted p-4 overflow-x-auto text-sm">
-              <code>{`# Create a link with alias "gist" and URL:
+            <CodeBlock>{`# Create a link with alias "gist" and URL:
 # https://gist.githubusercontent.com/$1/raw/$2
 
 # Then run it locally:
 curl -sL ${baseUrl}/gist/{user}/{hash} | bash
 
 # Or:
-bash <(curl -sL ${baseUrl}/gist/{user}/{hash})`}</code>
-            </pre>
+bash <(curl -sL ${baseUrl}/gist/{user}/{hash})`}</CodeBlock>
             <p className="text-muted-foreground">
               This works because the app performs an HTTP 302
               redirect, so any tool that follows redirects can use go
@@ -170,9 +132,7 @@ bash <(curl -sL ${baseUrl}/gist/{user}/{hash})`}</code>
           </section>
 
           <section id="browser-setup" className="flex flex-col gap-3">
-            <h2 className="text-xl font-semibold border-b pb-2">
-              Browser Setup
-            </h2>
+            <SectionHeading>Browser Setup</SectionHeading>
             <p className="text-muted-foreground">
               You can configure your browser to treat the address bar
               as a go links launcher by adding a custom search engine.
@@ -182,32 +142,23 @@ bash <(curl -sL ${baseUrl}/gist/{user}/{hash})`}</code>
             <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
               <li>
                 Navigate to{' '}
-                <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
+                <InlineCode>
                   chrome://settings/searchEngines
-                </code>
+                </InlineCode>
               </li>
               <li>Click &quot;Add&quot; next to Site Search</li>
               <li>
-                Set the keyword to{' '}
-                <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                  go
-                </code>{' '}
-                (or any short keyword you prefer)
+                Set the keyword to <InlineCode>go</InlineCode> (or any
+                short keyword you prefer)
               </li>
               <li>
-                Set the URL to{' '}
-                <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                  {baseUrl}/%s
-                </code>
+                Set the URL to <InlineCode>{baseUrl}/%s</InlineCode>
               </li>
             </ul>
             <p className="text-muted-foreground">
-              After setup, type{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                go
-              </code>{' '}
-              in the address bar, press Tab, then type your alias to
-              navigate directly.
+              After setup, type <InlineCode>go</InlineCode> in the
+              address bar, press Tab, then type your alias to navigate
+              directly.
             </p>
 
             <h3 className="text-lg font-medium pt-2">Firefox</h3>
@@ -215,16 +166,11 @@ bash <(curl -sL ${baseUrl}/gist/{user}/{hash})`}</code>
               <li>Bookmark any page from your deployment</li>
               <li>
                 Edit the bookmark and set a keyword (e.g.,{' '}
-                <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                  go
-                </code>
-                )
+                <InlineCode>go</InlineCode>)
               </li>
               <li>
                 Change the URL to{' '}
-                <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                  {baseUrl}/%s
-                </code>
+                <InlineCode>{baseUrl}/%s</InlineCode>
               </li>
             </ul>
             <p className="text-muted-foreground">
@@ -237,17 +183,14 @@ bash <(curl -sL ${baseUrl}/gist/{user}/{hash})`}</code>
             id="running-locally"
             className="flex flex-col gap-3"
           >
-            <h2 className="text-xl font-semibold border-b pb-2">
-              Running Locally
-            </h2>
+            <SectionHeading>Running Locally</SectionHeading>
             <p className="text-muted-foreground">Prerequisites:</p>
             <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
               <li>Node.js</li>
               <li>Docker (for the database)</li>
               <li>yarn</li>
             </ul>
-            <pre className="rounded-lg bg-muted p-4 overflow-x-auto text-sm">
-              <code>{`# Start PostgreSQL
+            <CodeBlock>{`# Start PostgreSQL
 docker-compose up -d db
 
 # Run database migrations
@@ -258,72 +201,46 @@ dbmate up
 yarn
 
 # Start development server
-yarn dev`}</code>
-            </pre>
+yarn dev`}</CodeBlock>
             <p className="text-muted-foreground">
-              Create a{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                .env.local
-              </code>{' '}
-              file based on{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                .env.example
-              </code>
-              . To disable authentication, set{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                AUTH0_ENABLED=false
-              </code>
-              .
+              Create a <InlineCode>.env.local</InlineCode> file based
+              on <InlineCode>.env.example</InlineCode>. To disable
+              authentication, set{' '}
+              <InlineCode>AUTH0_ENABLED=false</InlineCode>.
             </p>
           </section>
 
           <section id="deploying" className="flex flex-col gap-3">
-            <h2 className="text-xl font-semibold border-b pb-2">
-              Deploying
-            </h2>
+            <SectionHeading>Deploying</SectionHeading>
 
             <h3 className="text-lg font-medium pt-2">Docker</h3>
-            <pre className="rounded-lg bg-muted p-4 overflow-x-auto text-sm">
-              <code>{`docker build . -t golinks
-docker run -p 3000:3000 --env-file .env golinks`}</code>
-            </pre>
+            <CodeBlock>{`docker build . -t golinks
+docker run -p 3000:3000 --env-file .env golinks`}</CodeBlock>
             <p className="text-muted-foreground">
               A pre-built image is available at{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                armand1m/golinks
-              </code>
-              .
+              <InlineCode>armand1m/golinks</InlineCode>.
             </p>
 
             <h3 className="text-lg font-medium pt-2">Fly.io</h3>
-            <pre className="rounded-lg bg-muted p-4 overflow-x-auto text-sm">
-              <code>{`fly deploy
+            <CodeBlock>{`fly deploy
 fly secrets set DATABASE_CONNECTION_STRING=...
-fly secrets set AUTH0_DOMAIN=...`}</code>
-            </pre>
+fly secrets set AUTH0_DOMAIN=...`}</CodeBlock>
             <p className="text-muted-foreground">
-              See{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                fly.toml
-              </code>{' '}
-              for the deployment configuration.
+              See <InlineCode>fly.toml</InlineCode> for the deployment
+              configuration.
             </p>
 
             <h3 className="text-lg font-medium pt-2">Kubernetes</h3>
             <p className="text-muted-foreground">
               Kubernetes manifests are available in the{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                ./kubernetes
-              </code>{' '}
-              directory of the repository, including Cloud SQL proxy
-              setup and secrets configuration.
+              <InlineCode>./kubernetes</InlineCode> directory of the
+              repository, including Cloud SQL proxy setup and secrets
+              configuration.
             </p>
           </section>
 
           <section id="repository" className="flex flex-col gap-3">
-            <h2 className="text-xl font-semibold border-b pb-2">
-              Repository
-            </h2>
+            <SectionHeading>Repository</SectionHeading>
             <p className="text-muted-foreground">
               The source code is available at{' '}
               <a
@@ -345,24 +262,9 @@ fly secrets set AUTH0_DOMAIN=...`}</code>
   );
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = async (
-  context
-) => {
-  const { getUserClaimsFromRequest } = await import('../lib/auth');
-  const { Config } = await import('../lib/config');
-  const request = context?.req as NextApiRequest;
-  const { user } = await getUserClaimsFromRequest(request);
-  const logoname = Config.metadata.logoname;
-  const baseUrl = Config.metadata.baseUrl;
-  const isAuthEnabled = Config.features.auth0;
-  const isAuthenticated = user !== null;
-
-  return {
-    props: {
-      logoname,
-      baseUrl,
-      isAuthEnabled,
-      isAuthenticated,
-    },
-  };
+export const getServerSideProps: GetServerSideProps<
+  CommonPageProps
+> = async (context) => {
+  const props = await getCommonPageProps(context);
+  return { props };
 };

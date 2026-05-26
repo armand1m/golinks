@@ -1,5 +1,5 @@
 import React from 'react';
-import { GetServerSideProps, NextApiRequest } from 'next';
+import { GetServerSideProps } from 'next';
 
 import {
   Table,
@@ -24,18 +24,22 @@ import {
   createRedirectUrl,
   findLinkRecursive,
 } from '../lib/features/link-parameters';
+import {
+  getCommonPageProps,
+  CommonPageProps,
+} from '../lib/utils/get-common-server-side-props';
+import { isMobileDevice } from '../lib/utils/user-agent';
 
-interface Props {
+interface Props extends CommonPageProps {
   alias: string;
-  baseUrl: string;
-  logoname: string;
-  isAuthEnabled: boolean;
-  isAuthenticated: boolean;
   isMobile: boolean;
   similarLinks: NonNullable<
     NonNullable<SearchLinksQuery['searchLinks']>['nodes']
   >;
 }
+
+const linkClassName =
+  'block max-w-[350px] truncate text-primary underline';
 
 const LinkNotFound = ({
   alias,
@@ -82,7 +86,7 @@ const LinkNotFound = ({
                         <TableCell>
                           <a
                             href={new URL(link.alias, baseUrl).href}
-                            className="block max-w-[350px] truncate text-primary underline"
+                            className={linkClassName}
                           >
                             {link.alias}
                           </a>
@@ -90,7 +94,7 @@ const LinkNotFound = ({
                         <TableCell>
                           <a
                             href={link.url}
-                            className="block max-w-[350px] truncate text-primary underline"
+                            className={linkClassName}
                           >
                             {link.url}
                           </a>
@@ -113,25 +117,12 @@ export default LinkNotFound;
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context
 ) => {
-  const { Config } = await import('../lib/config');
-  const { getUserClaimsFromRequest } = await import('../lib/auth');
   const { initializeApollo } = await import('../lib/apollo');
-  const { user } = await getUserClaimsFromRequest(
-    context?.req as NextApiRequest
-  );
+  const common = await getCommonPageProps(context);
   const apolloClient = initializeApollo();
-  const logoname = Config.metadata.logoname;
-  const baseUrl = Config.metadata.baseUrl;
-  const isAuthEnabled = Config.features.auth0;
-  const isAuthenticated = user !== null;
-  const userAgent = context.req.headers['user-agent'];
-  const isMobile = userAgent
-    ? Boolean(
-        userAgent.match(
-          /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i
-        )
-      )
-    : false;
+
+  const userAgent = context.req.headers['user-agent'] ?? '';
+  const mobile = isMobileDevice(userAgent);
 
   const contextAlias = context.query.alias as string[];
   const link = await findLinkRecursive({
@@ -146,38 +137,26 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       SearchLinksQueryVariables
     >({
       query: SearchLinksDocument,
-      variables: {
-        search: alias,
-      },
+      variables: { search: alias },
     });
-
-    const similarLinks = searchResults.data.searchLinks?.nodes ?? [];
 
     return {
       props: {
         alias,
-        baseUrl,
-        logoname,
-        isMobile,
-        isAuthEnabled,
-        isAuthenticated,
-        similarLinks,
+        ...common,
+        isMobile: mobile,
+        similarLinks: searchResults.data.searchLinks?.nodes ?? [],
       },
     };
   }
 
-  /**
-   * Trigger metric update in the background.
-   */
   apolloClient
     .mutate<
       CreateLinkUsageMetricMutation,
       CreateLinkUsageMetricMutationVariables
     >({
       mutation: CreateLinkUsageMetricDocument,
-      variables: {
-        linkId: link.id,
-      },
+      variables: { linkId: link.id },
     })
     .then(() => {
       console.log(
@@ -192,7 +171,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     });
 
   const response = context.res;
-
   response.writeHead(302, {
     Location: createRedirectUrl({
       linkUrl: link.url,
@@ -200,21 +178,13 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       contextAlias,
     }),
   });
-
   response.end();
 
-  /**
-   * This return doesn't do anything actually.
-   * The request is already ended at this point.
-   **/
   return {
     props: {
       alias: link.alias,
-      baseUrl,
-      logoname,
-      isMobile,
-      isAuthEnabled,
-      isAuthenticated,
+      ...common,
+      isMobile: mobile,
       similarLinks: [],
     },
   };
