@@ -1,0 +1,15 @@
+# Auth0 tenant configuration
+auth0_domain         = "your-tenant.eu.auth0.com"
+auth0_client_id      = "<terraform-m2m-client-id>"
+auth0_client_secret  = "<terraform-m2m-client-secret>"
+
+# Application configuration
+app_name             = "golinks"
+app_base_url         = "https://go.d1m.dev"
+api_identifier       = "https://go.armand1m.dev/"
+api_name             = "GoLinks API"
+cookie_domain        = "go.d1m.dev"
+
+# Google OAuth2 identity provider
+google_client_id     = "<google-oauth-client-id>"
+google_client_secret = "<google-oauth-client-secret>"
