@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Lock, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 
+const MAX_ALIAS_LENGTH = 24;
+
 const CreateLinkSchema = Yup.object().shape({
   alias: Yup.string()
     .matches(/^[a-z0-9//]+$/i)
-    .max(24, 'Too long for an alias.')
+    .max(MAX_ALIAS_LENGTH, 'Too long for an alias.')
     .required('An alias is required.'),
   url: Yup.string()
     .url('It must be a valid url.')
@@ -29,13 +31,7 @@ interface AllowedEmail {
   email: string;
 }
 
-interface Props {
-  onSubmit: (
-    values: LinkFormValues,
-    helpers: FormikHelpers<LinkFormValues>
-  ) => void | Promise<void>;
-  initialValues?: LinkFormValues;
-  children?: React.ReactNode;
+interface PrivateLinkFieldsProps {
   isAuthEnabled?: boolean;
   isAuthenticated?: boolean;
   linkAllowedEmails?: AllowedEmail[];
@@ -43,41 +39,7 @@ interface Props {
   onRemoveAllowedEmail?: (emailId: string) => void | Promise<void>;
 }
 
-interface FormikInputProps {
-  name: string;
-  label: string;
-  type?: string;
-  required?: boolean;
-}
-
-const FormikInput: React.FC<FormikInputProps> = ({
-  name,
-  label,
-  type = 'text',
-  required,
-}) => {
-  const [field, meta] = useField({ name, type });
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={name}>
-        {label}
-        {required && ' *'}
-      </Label>
-      <Input id={name} type={type} {...field} />
-      {meta.touched && meta.error && (
-        <p className="text-sm text-destructive">{meta.error}</p>
-      )}
-    </div>
-  );
-};
-
-const PrivateLinkFields: React.FC<{
-  isAuthEnabled?: boolean;
-  isAuthenticated?: boolean;
-  linkAllowedEmails?: AllowedEmail[];
-  onAddAllowedEmail?: (email: string) => void | Promise<void>;
-  onRemoveAllowedEmail?: (emailId: string) => void | Promise<void>;
-}> = ({
+const PrivateLinkFields: React.FC<PrivateLinkFieldsProps> = ({
   isAuthEnabled,
   isAuthenticated,
   linkAllowedEmails = [],
@@ -175,35 +137,47 @@ const PrivateLinkFields: React.FC<{
   );
 };
 
-export const Fields: React.FC<{
-  isAuthEnabled?: boolean;
-  isAuthenticated?: boolean;
-  linkAllowedEmails?: AllowedEmail[];
-  onAddAllowedEmail?: (email: string) => void | Promise<void>;
-  onRemoveAllowedEmail?: (emailId: string) => void | Promise<void>;
-}> = ({
-  isAuthEnabled,
-  isAuthenticated,
-  linkAllowedEmails,
-  onAddAllowedEmail,
-  onRemoveAllowedEmail,
-}) => {
+export const Fields: React.FC<PrivateLinkFieldsProps> = (props) => {
   return (
     <div className="flex flex-col gap-4">
       <FormikInput name="alias" label="Alias" required />
       <FormikInput name="url" label="Url" type="url" required />
-      <PrivateLinkFields
-        isAuthEnabled={isAuthEnabled}
-        isAuthenticated={isAuthenticated}
-        linkAllowedEmails={linkAllowedEmails}
-        onAddAllowedEmail={onAddAllowedEmail}
-        onRemoveAllowedEmail={onRemoveAllowedEmail}
-      />
+      <PrivateLinkFields {...props} />
     </div>
   );
 };
 
-export const FormWrapper: React.FC<Props> = ({
+interface FormWrapperProps {
+  onSubmit: (
+    values: LinkFormValues,
+    helpers: FormikHelpers<LinkFormValues>
+  ) => void | Promise<void>;
+  initialValues?: LinkFormValues;
+  children?: React.ReactNode;
+}
+
+const FormikInput: React.FC<{
+  name: string;
+  label: string;
+  type?: string;
+  required?: boolean;
+}> = ({ name, label, type = 'text', required }) => {
+  const [field, meta] = useField({ name, type });
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={name}>
+        {label}
+        {required && ' *'}
+      </Label>
+      <Input id={name} type={type} {...field} />
+      {meta.touched && meta.error && (
+        <p className="text-sm text-destructive">{meta.error}</p>
+      )}
+    </div>
+  );
+};
+
+export const FormWrapper: React.FC<FormWrapperProps> = ({
   onSubmit,
   children,
   initialValues = {
@@ -214,9 +188,7 @@ export const FormWrapper: React.FC<Props> = ({
 }) => {
   return (
     <Formik
-      onSubmit={(values, form) => {
-        onSubmit(values, form);
-      }}
+      onSubmit={onSubmit}
       validationSchema={CreateLinkSchema}
       initialValues={initialValues}
     >

@@ -21,6 +21,9 @@ type LinkNode = NonNullable<
   GetAllLinksQuery['links']
 >['nodes'][number];
 
+const linkClassName =
+  'block max-w-[350px] truncate text-primary underline';
+
 interface Props {
   links: LinkNode[];
   baseUrl: string;
@@ -66,7 +69,7 @@ export const LinkTable: React.FC<Props> = ({
               <TableCell>
                 <a
                   href={new URL(link.alias, baseUrl).href}
-                  className="block max-w-[350px] truncate text-primary underline"
+                  className={linkClassName}
                 >
                   {link.alias}
                   {link.isPrivate && (
@@ -75,10 +78,7 @@ export const LinkTable: React.FC<Props> = ({
                 </a>
               </TableCell>
               <TableCell>
-                <a
-                  href={link.url}
-                  className="block max-w-[350px] truncate text-primary underline"
-                >
+                <a href={link.url} className={linkClassName}>
                   {link.url}
                 </a>
               </TableCell>
@@ -110,7 +110,7 @@ export const LinkTable: React.FC<Props> = ({
                       onClick={() => {
                         const url = new URL(
                           link.alias,
-                          document.location.origin
+                          baseUrl
                         ).toString();
                         onShare(url);
                       }}

@@ -6,16 +6,16 @@ interface Props {
 }
 
 export const NotFoundAnimation: React.FC<Props> = ({ isMobile }) => {
-  const width = isMobile ? 250 : 600;
-  const height = isMobile ? 150 : 350;
-
   return (
     <div className="mb-0">
       <Lottie
         animationData={animationData}
         loop
         autoplay
-        style={{ width, height }}
+        style={{
+          width: isMobile ? 250 : 600,
+          height: isMobile ? 150 : 350,
+        }}
       />
     </div>
   );
