@@ -33,7 +33,7 @@
     "lint:fix": "prettier --write './**/*.{tsx,ts}'"
   },
   "dependencies": {
-    "@apollo/client": "^3.2.3",
+    "@apollo/client": "^3.14.1",
     "@auth0/nextjs-auth0": "^4",
     "@graphile-contrib/pg-simplify-inflector": "^6.0.0",
     "@graphql-tools/schema": "^10",

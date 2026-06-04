@@ -4,6 +4,8 @@ import {
   GetLinkByAliasQuery,
   GetLinkByAliasQueryVariables,
 } from '../../__generated__/graphql';
+import { getLinkCache } from '../../cache/link-cache';
+import { cacheLogger } from '../../cache/logger';
 
 interface CreateRedirectUrlProps {
   linkUrl: string;
@@ -33,6 +35,40 @@ export const createRedirectUrl = ({
 
   return linkUrl;
 };
+
+export interface ResolvedLink {
+  id: string;
+  url: string;
+  alias: string;
+}
+
+export function findLinkInCache(
+  contextAlias: string[]
+): ResolvedLink | undefined {
+  if (contextAlias.length === 0) return undefined;
+
+  const cache = getLinkCache();
+  const candidates: string[] = [];
+
+  for (let i = contextAlias.length; i >= 1; i--) {
+    const candidate = contextAlias.slice(0, i).join('/');
+    candidates.push(candidate);
+    const cached = cache.get(candidate);
+    if (cached) {
+      cacheLogger.debug('cache.lookup', {
+        candidates,
+        matchedAlias: cached.alias,
+      });
+      return { id: cached.id, url: cached.url, alias: cached.alias };
+    }
+  }
+
+  cacheLogger.debug('cache.lookup', {
+    candidates,
+    matchedAlias: null,
+  });
+  return undefined;
+}
 
 interface FindLinkRecursiveProps {
   contextAlias: string[];

@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -80,6 +81,9 @@ export function EditLinkDialog({
         >
           <DialogHeader>
             <DialogTitle>Edit Link</DialogTitle>
+            <DialogDescription>
+              Edit an existing short link.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <LinkForm.Fields

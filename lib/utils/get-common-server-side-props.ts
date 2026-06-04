@@ -6,6 +6,7 @@ export interface CommonPageProps {
   baseUrl: string;
   isAuthEnabled: boolean;
   isAuthenticated: boolean;
+  userEmail?: string | null;
 }
 
 export async function getCommonPageProps(
@@ -22,5 +23,6 @@ export async function getCommonPageProps(
     baseUrl: Config.metadata.baseUrl,
     isAuthEnabled: Config.features.auth0,
     isAuthenticated: user !== null,
+    userEmail: user?.email || null,
   };
 }

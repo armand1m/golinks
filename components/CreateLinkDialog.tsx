@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -50,6 +51,9 @@ export function CreateLinkDialog({
         >
           <DialogHeader>
             <DialogTitle>Create Link</DialogTitle>
+            <DialogDescription>
+              Create a new short link.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <LinkForm.Fields

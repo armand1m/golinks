@@ -23,12 +23,15 @@ import {
 import {
   createRedirectUrl,
   findLinkRecursive,
+  findLinkInCache,
 } from '../lib/features/link-parameters';
 import {
   getCommonPageProps,
   CommonPageProps,
 } from '../lib/utils/get-common-server-side-props';
 import { isMobileDevice } from '../lib/utils/user-agent';
+import { getLinkCache } from '../lib/cache/link-cache';
+import { Config } from '../lib/config';
 
 interface Props extends CommonPageProps {
   alias: string;
@@ -114,6 +117,34 @@ const LinkNotFound = ({
 
 export default LinkNotFound;
 
+function fireUsageMetric(
+  apolloClient: import('@apollo/client').ApolloClient<
+    import('@apollo/client').NormalizedCacheObject
+  >,
+  linkId: string,
+  linkAlias: string
+) {
+  apolloClient
+    .mutate<
+      CreateLinkUsageMetricMutation,
+      CreateLinkUsageMetricMutationVariables
+    >({
+      mutation: CreateLinkUsageMetricDocument,
+      variables: { linkId },
+    })
+    .then(() => {
+      console.log(
+        `[info:metric]: Added metric to link with alias "${linkAlias}"`
+      );
+    })
+    .catch((err: Error) => {
+      console.error(
+        `[error:metric]: Failed to add metric for link with alias "${linkAlias}"`
+      );
+      console.error(err);
+    });
+}
+
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context
 ) => {
@@ -125,6 +156,47 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const mobile = isMobileDevice(userAgent);
 
   const contextAlias = context.query.alias as string[];
+  const cacheEnabled = Config.cache.linkCacheEnabled;
+
+  if (cacheEnabled) {
+    const cachedLink = findLinkInCache(contextAlias);
+
+    if (cachedLink) {
+      const cache = getLinkCache();
+      const canAccess = cache.canAccess(
+        cachedLink.alias,
+        common.userEmail
+      );
+
+      if (canAccess) {
+        fireUsageMetric(
+          apolloClient,
+          cachedLink.id,
+          cachedLink.alias
+        );
+
+        const response = context.res;
+        response.writeHead(302, {
+          Location: createRedirectUrl({
+            linkUrl: cachedLink.url,
+            linkAlias: cachedLink.alias,
+            contextAlias,
+          }),
+        });
+        response.end();
+
+        return {
+          props: {
+            alias: cachedLink.alias,
+            ...common,
+            isMobile: mobile,
+            similarLinks: [],
+          },
+        };
+      }
+    }
+  }
+
   const link = await findLinkRecursive({
     contextAlias,
     apolloClient,
@@ -150,25 +222,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     };
   }
 
-  apolloClient
-    .mutate<
-      CreateLinkUsageMetricMutation,
-      CreateLinkUsageMetricMutationVariables
-    >({
-      mutation: CreateLinkUsageMetricDocument,
-      variables: { linkId: link.id },
-    })
-    .then(() => {
-      console.log(
-        `[info:metric]: Added metric to link with alias "${link.alias}"`
-      );
-    })
-    .catch((err) => {
-      console.error(
-        `[error:metric]: Failed to add metric for link with alias "${link.alias}"`
-      );
-      console.error(err);
-    });
+  fireUsageMetric(apolloClient, link.id, link.alias);
 
   const response = context.res;
   response.writeHead(302, {

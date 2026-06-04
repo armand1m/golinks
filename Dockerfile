@@ -27,6 +27,15 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+# Dummy env vars required for config validation during build
+ENV NODE_ENV=production
+ENV LOGONAME=golinks
+ENV APP_HOSTNAME=localhost
+ENV PROTO=http
+ENV DATABASE_CONNECTION_STRING=postgres://dev:dev@127.0.0.1:5432/golinks
+ENV DATABASE_SCHEMA=public
+ENV AUTH0_ENABLED=false
+
 RUN yarn build
 
 # If using npm comment out above and use below instead
@@ -55,6 +64,5 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT 3000
-ENV HOSTNAME 0.0.0.0
 
 CMD ["node", "server.js"]

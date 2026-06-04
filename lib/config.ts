@@ -99,6 +99,14 @@ const BaseConfigSchema = Yup.object({
       createErrorMessageForRequiredEnv('DATABASE_SCHEMA')
     ),
   }).required(),
+  cache: Yup.object({
+    linkCacheTtlMs: Yup.number().default(5 * 60 * 1000),
+    linkCacheRefreshMs: Yup.number().default(5 * 60 * 1000),
+    linkCacheEnabled: Yup.boolean().default(true),
+    logLevel: Yup.string()
+      .oneOf(['debug', 'info', 'warn', 'error', 'silent'])
+      .default(undefined),
+  }).required(),
 }).required();
 
 type BaseConfig = Yup.InferType<typeof BaseConfigSchema>;
@@ -180,7 +188,7 @@ const createConfig = (): ConfigInterface => {
         hostname: APP_HOSTNAME,
         port: PORT ? parseInt(PORT, 10) : undefined,
         proto: PROTO,
-        baseUrl: `${PROTO}://${APP_HOSTNAME}${APP_HOSTNAME === 'localhost' && PORT ? `:${PORT}` : ''}`,
+        baseUrl: `${PROTO}://${APP_HOSTNAME}${PORT ? `:${PORT}` : ''}`,
       },
       anonymous: {
         permissions: ANONYMOUS_PERMISSIONS,
@@ -192,6 +200,16 @@ const createConfig = (): ConfigInterface => {
       database: {
         connectionString: DATABASE_CONNECTION_STRING,
         schema: DATABASE_SCHEMA,
+      },
+      cache: {
+        linkCacheTtlMs: process.env.LINK_CACHE_TTL_MS
+          ? parseInt(process.env.LINK_CACHE_TTL_MS, 10)
+          : undefined,
+        linkCacheRefreshMs: process.env.LINK_CACHE_REFRESH_MS
+          ? parseInt(process.env.LINK_CACHE_REFRESH_MS, 10)
+          : undefined,
+        linkCacheEnabled: process.env.LINK_CACHE_ENABLED !== 'false',
+        logLevel: process.env.CACHE_LOG_LEVEL || undefined,
       },
     },
     BaseConfigSchema
