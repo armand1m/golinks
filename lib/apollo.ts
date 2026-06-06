@@ -5,7 +5,10 @@ import {
   ApolloClient,
   InMemoryCache,
   NormalizedCacheObject,
+  ApolloLink,
 } from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
+import { apolloLogger } from './apollo-logger';
 
 let apolloClient: ApolloClient<NormalizedCacheObject> | undefined;
 
@@ -13,6 +16,87 @@ export type ResolverContext = {
   req?: IncomingMessage;
   res?: ServerResponse;
 };
+
+function sanitizeVariables(
+  variables: Record<string, unknown> | undefined
+): Record<string, unknown> | undefined {
+  if (!variables) return undefined;
+
+  const sensitiveKeys = [
+    'password',
+    'token',
+    'secret',
+    'authorization',
+    'cookie',
+  ];
+
+  const sanitized: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(variables)) {
+    if (sensitiveKeys.some((sk) => key.toLowerCase().includes(sk))) {
+      sanitized[key] = '[redacted]';
+    } else {
+      sanitized[key] = value;
+    }
+  }
+
+  return sanitized;
+}
+
+function createErrorLink() {
+  return onError(({ graphQLErrors, networkError, operation }) => {
+    const operationName = operation.operationName || 'unknown';
+
+    if (graphQLErrors) {
+      for (const err of graphQLErrors) {
+        apolloLogger.error('graphql.error', {
+          operationName,
+          message: err.message,
+          path: err.path?.join('.'),
+          errcode: (err.extensions?.errcode as string) ?? null,
+          hint: (err.extensions?.hint as string) ?? null,
+          detail: (err.extensions?.detail as string) ?? null,
+        });
+      }
+    }
+
+    if (networkError) {
+      apolloLogger.error('network.error', {
+        operationName,
+        message: networkError.message,
+        statusCode:
+          'statusCode' in networkError
+            ? (networkError as { statusCode: number }).statusCode
+            : null,
+      });
+    }
+  });
+}
+
+function createRequestLoggingLink(enabled: boolean) {
+  if (!enabled) {
+    return ApolloLink.empty();
+  }
+
+  return new ApolloLink((operation, forward) => {
+    const startTime = Date.now();
+
+    return forward(operation).map((result) => {
+      const durationMs = (Date.now() - startTime).toFixed(1);
+      const operationName = operation.operationName || 'unknown';
+      const variables = sanitizeVariables(
+        operation.variables as Record<string, unknown>
+      );
+
+      apolloLogger.debug('request.completed', {
+        operationName,
+        variables,
+        durationMs,
+      });
+
+      return result;
+    });
+  });
+}
 
 function createIsomorphicLink() {
   let uri: string;
@@ -31,33 +115,44 @@ function createIsomorphicLink() {
 }
 
 function createApolloClient() {
+  let requestLoggingEnabled = false;
+
+  if (typeof window === 'undefined') {
+    const { Config } = require('./config');
+    requestLoggingEnabled = Config.apollo.requestLogging;
+  }
+
+  const errorLink = createErrorLink();
+  const requestLoggingLink = createRequestLoggingLink(
+    requestLoggingEnabled
+  );
+  const httpLink = createIsomorphicLink();
+
+  const link = ApolloLink.from([
+    errorLink,
+    requestLoggingLink,
+    httpLink,
+  ]);
+
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
-    link: createIsomorphicLink(),
+    link,
     cache: new InMemoryCache({
-      // Disable result caching on the server to prevent memory leaks
-      // from the cache growing unbounded across SSR requests
       resultCaching: typeof window !== 'undefined',
     }),
   });
 }
 
 export function initializeApollo(initialState: any = null) {
-  // On the server, always create a new Apollo Client to avoid memory leaks
-  // from the singleton persisting across SSR requests
   const _apolloClient =
     typeof window === 'undefined'
       ? createApolloClient()
       : (apolloClient ?? createApolloClient());
 
-  // If your page has Next.js data fetching methods that use Apollo Client, the initial state
-  // get hydrated here
   if (initialState) {
     _apolloClient.cache.restore(initialState);
   }
-  // For SSG and SSR always create a new Apollo Client
   if (typeof window === 'undefined') return _apolloClient;
-  // Create the Apollo Client once in the client
   if (!apolloClient) apolloClient = _apolloClient;
 
   return _apolloClient;

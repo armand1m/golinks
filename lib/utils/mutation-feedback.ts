@@ -1,4 +1,5 @@
 import { toast } from 'sonner';
+import { apolloLogger } from '../apollo-logger';
 
 interface ToastMessage {
   title: string;
@@ -16,7 +17,10 @@ export async function withMutationFeedback(
       description: success.description,
     });
   } catch (err) {
-    console.error(`${error.title}: `, err);
+    apolloLogger.error('mutation.failed', {
+      title: error.title,
+      error: err instanceof Error ? err.message : String(err),
+    });
     toast.error(error.title, { description: error.description });
   }
 }

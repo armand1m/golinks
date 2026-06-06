@@ -6,6 +6,7 @@ import {
   DeleteLinkAllowedEmailDocument,
 } from '../../__generated__/graphql';
 import { TOAST } from '../../utils/toast-messages';
+import { apolloLogger } from '../../apollo-logger';
 
 export interface AllowedEmail {
   id: string;
@@ -35,7 +36,11 @@ export function useAllowedEmails(initialEmails: AllowedEmail[] = []) {
         ]);
       }
     } catch (error) {
-      console.error('Failed to add allowed email:', error);
+      apolloLogger.error('allowedEmail.add.failed', {
+        linkId,
+        email,
+        error: error instanceof Error ? error.message : String(error),
+      });
       toast.error(TOAST.EMAIL_ADD_FAILED.title, {
         description: TOAST.EMAIL_ADD_FAILED.description,
       });
@@ -47,7 +52,10 @@ export function useAllowedEmails(initialEmails: AllowedEmail[] = []) {
       await removeAllowedEmail({ variables: { id: emailId } });
       setEmails((prev) => prev.filter((e) => e.id !== emailId));
     } catch (error) {
-      console.error('Failed to remove allowed email:', error);
+      apolloLogger.error('allowedEmail.remove.failed', {
+        emailId,
+        error: error instanceof Error ? error.message : String(error),
+      });
       toast.error(TOAST.EMAIL_REMOVE_FAILED.title, {
         description: TOAST.EMAIL_REMOVE_FAILED.description,
       });

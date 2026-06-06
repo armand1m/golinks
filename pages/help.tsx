@@ -42,8 +42,7 @@ export default function Help({
                 <li key={section.id}>
                   <a
                     href={`#${section.id}`}
-                    className="text-primary underline hover:no-underline"
-                  >
+                    className="text-primary underline hover:no-underline">
                     {section.title}
                   </a>
                 </li>
@@ -53,8 +52,7 @@ export default function Help({
 
           <section
             id="creating-a-link"
-            className="flex flex-col gap-3"
-          >
+            className="flex flex-col gap-3">
             <SectionHeading>Creating a Link</SectionHeading>
             <p className="text-muted-foreground">
               A link consists of a short <strong>alias</strong> and a
@@ -73,8 +71,7 @@ export default function Help({
 
           <section
             id="editing-deleting-links"
-            className="flex flex-col gap-3"
-          >
+            className="flex flex-col gap-3">
             <SectionHeading>Editing & Deleting Links</SectionHeading>
             <p className="text-muted-foreground">
               Each link in the table has action buttons on the right
@@ -85,8 +82,7 @@ export default function Help({
 
           <section
             id="dynamic-link-parameters"
-            className="flex flex-col gap-3"
-          >
+            className="flex flex-col gap-3">
             <SectionHeading>Dynamic Link Parameters</SectionHeading>
             <p className="text-muted-foreground">
               Links support <InlineCode>$1</InlineCode>,{' '}
@@ -181,8 +177,7 @@ bash <(curl -sL ${baseUrl}/gist/{user}/{hash})`}</CodeBlock>
 
           <section
             id="running-locally"
-            className="flex flex-col gap-3"
-          >
+            className="flex flex-col gap-3">
             <SectionHeading>Running Locally</SectionHeading>
             <p className="text-muted-foreground">Prerequisites:</p>
             <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
@@ -247,8 +242,7 @@ fly secrets set AUTH0_DOMAIN=...`}</CodeBlock>
                 href="https://github.com/armand1m/golinks"
                 className="text-primary underline hover:no-underline"
                 target="_blank"
-                rel="noopener noreferrer"
-              >
+                rel="noopener noreferrer">
                 github.com/armand1m/golinks
               </a>
               . The project is licensed under MIT. Contributions, bug

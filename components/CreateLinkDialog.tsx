@@ -47,8 +47,7 @@ export function CreateLinkDialog({
       <DialogContent>
         <LinkForm.FormWrapper
           initialValues={undefined}
-          onSubmit={handleSubmit}
-        >
+          onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create Link</DialogTitle>
             <DialogDescription>
@@ -65,8 +64,7 @@ export function CreateLinkDialog({
             <Button
               type="reset"
               variant="outline"
-              onClick={() => setOpen(false)}
-            >
+              onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>

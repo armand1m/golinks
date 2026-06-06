@@ -107,6 +107,14 @@ const BaseConfigSchema = Yup.object({
       .oneOf(['debug', 'info', 'warn', 'error', 'silent'])
       .default(undefined),
   }).required(),
+  apollo: Yup.object({
+    logLevel: Yup.string()
+      .oneOf(['debug', 'info', 'warn', 'error', 'silent'])
+      .default(undefined),
+    requestLogging: Yup.boolean().default(
+      process.env.NODE_ENV === 'development'
+    ),
+  }).required(),
 }).required();
 
 type BaseConfig = Yup.InferType<typeof BaseConfigSchema>;
@@ -210,6 +218,10 @@ const createConfig = (): ConfigInterface => {
           : undefined,
         linkCacheEnabled: process.env.LINK_CACHE_ENABLED !== 'false',
         logLevel: process.env.CACHE_LOG_LEVEL || undefined,
+      },
+      apollo: {
+        logLevel: process.env.APOLLO_LOG_LEVEL || undefined,
+        requestLogging: process.env.APOLLO_REQUEST_LOGGING === 'true',
       },
     },
     BaseConfigSchema

@@ -29,8 +29,7 @@ export default function App({
       <ApolloProvider client={apolloClient}>
         <ThemeProvider
           attribute="class"
-          defaultTheme={initialThemeMode}
-        >
+          defaultTheme={initialThemeMode}>
           <ThemeModeController initialThemeMode={initialThemeMode} />
           <Toaster />
           <Component {...pageProps} />

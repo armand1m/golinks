@@ -93,16 +93,14 @@ const SparklineChart = ({ data }: { data: Datum[] }) => {
       height={CHART_HEIGHT}
       aria-label="Link usage metrics graphic"
       role="img"
-      onMouseLeave={() => setHoveredIndex(null)}
-    >
+      onMouseLeave={() => setHoveredIndex(null)}>
       <defs>
         <pattern
           id="area_pattern"
           width={PATTERN_SIZE}
           height={PATTERN_SIZE}
           patternUnits="userSpaceOnUse"
-          patternTransform="rotate(45)"
-        >
+          patternTransform="rotate(45)">
           <line
             x1="0"
             y1="0"
@@ -142,8 +140,7 @@ const SparklineChart = ({ data }: { data: Datum[] }) => {
             y={MARGIN_TOP - 4}
             textAnchor="middle"
             fontSize="11"
-            fill={colors.primary}
-          >
+            fill={colors.primary}>
             {data[hoveredIndex].date}: {data[hoveredIndex].count}
           </text>
         </>

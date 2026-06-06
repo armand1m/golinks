@@ -69,8 +69,7 @@ export const LinkTable: React.FC<Props> = ({
               <TableCell>
                 <a
                   href={new URL(link.alias, baseUrl).href}
-                  className={linkClassName}
-                >
+                  className={linkClassName}>
                   {link.alias}
                   {link.isPrivate && (
                     <Lock className="ml-1.5 inline h-3 w-3 text-muted-foreground" />
@@ -100,8 +99,7 @@ export const LinkTable: React.FC<Props> = ({
                   <DropdownMenuContent align="end">
                     {isEditEnabled && (
                       <DropdownMenuItem
-                        onClick={() => onEdit(link.id)}
-                      >
+                        onClick={() => onEdit(link.id)}>
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
@@ -113,16 +111,14 @@ export const LinkTable: React.FC<Props> = ({
                           baseUrl
                         ).toString();
                         onShare(url);
-                      }}
-                    >
+                      }}>
                       <Share2 className="mr-2 h-4 w-4" />
                       Share
                     </DropdownMenuItem>
                     {isDeleteEnabled && (
                       <DropdownMenuItem
                         className="text-destructive"
-                        onClick={() => onDelete(link.id)}
-                      >
+                        onClick={() => onDelete(link.id)}>
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>

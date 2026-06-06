@@ -3,7 +3,10 @@ import { postgraphile, PostGraphileOptions } from 'postgraphile';
 import { getUserClaimsFromRequest } from './auth';
 import { Config } from './config';
 import { cacheLogger } from './cache/logger';
-import { warmupLinkCache, startCacheRefreshLoop } from './cache/warmup';
+import {
+  warmupLinkCache,
+  startCacheRefreshLoop,
+} from './cache/warmup';
 import { getLinkCache } from './cache/link-cache';
 import { CacheInvalidationPlugin } from './cache/invalidate-plugin';
 import pgSimplifyInflector from '@graphile-contrib/pg-simplify-inflector';
@@ -35,10 +38,7 @@ if (cacheEnabled) {
     });
 }
 
-const appendPlugins = [
-  pgSimplifyInflector,
-  TagsFilePlugin,
-];
+const appendPlugins = [pgSimplifyInflector, TagsFilePlugin];
 
 if (cacheEnabled) {
   appendPlugins.push(CacheInvalidationPlugin);
@@ -92,7 +92,6 @@ const productionProperties: PostGraphileOptions = {
   retryOnInitFail: true,
   extendedErrors: ['errcode'],
   graphiql: false,
-  disableQueryLog: true,
 };
 
 export const graphqlInstance = postgraphile(

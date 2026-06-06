@@ -73,8 +73,7 @@ const PrivateLinkFields: React.FC<PrivateLinkFieldsProps> = ({
         />
         <Label
           htmlFor="isPrivate"
-          className="flex items-center gap-1.5 cursor-pointer"
-        >
+          className="flex items-center gap-1.5 cursor-pointer">
           <Lock className="h-3.5 w-3.5" />
           Private link
         </Label>
@@ -105,8 +104,7 @@ const PrivateLinkFields: React.FC<PrivateLinkFieldsProps> = ({
               variant="outline"
               size="sm"
               onClick={handleAddEmail}
-              disabled={!newEmail.trim()}
-            >
+              disabled={!newEmail.trim()}>
               <Plus className="h-4 w-4" />
             </Button>
           </div>
@@ -115,15 +113,13 @@ const PrivateLinkFields: React.FC<PrivateLinkFieldsProps> = ({
               {linkAllowedEmails.map((allowed) => (
                 <span
                   key={allowed.id}
-                  className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs"
-                >
+                  className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs">
                   {allowed.email}
                   {onRemoveAllowedEmail && (
                     <button
                       type="button"
                       onClick={() => onRemoveAllowedEmail(allowed.id)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
+                      className="text-muted-foreground hover:text-foreground">
                       <X className="h-3 w-3" />
                     </button>
                   )}
@@ -190,8 +186,7 @@ export const FormWrapper: React.FC<FormWrapperProps> = ({
     <Formik
       onSubmit={onSubmit}
       validationSchema={CreateLinkSchema}
-      initialValues={initialValues}
-    >
+      initialValues={initialValues}>
       <Form>{children}</Form>
     </Formik>
   );

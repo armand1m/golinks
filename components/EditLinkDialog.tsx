@@ -77,8 +77,7 @@ export function EditLinkDialog({
                 }
               : undefined
           }
-          onSubmit={handleSubmit}
-        >
+          onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Edit Link</DialogTitle>
             <DialogDescription>
@@ -102,8 +101,7 @@ export function EditLinkDialog({
             <Button
               type="reset"
               variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+              onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>

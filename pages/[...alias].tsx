@@ -32,6 +32,7 @@ import {
 import { isMobileDevice } from '../lib/utils/user-agent';
 import { getLinkCache } from '../lib/cache/link-cache';
 import { Config } from '../lib/config';
+import { apolloLogger } from '../lib/apollo-logger';
 
 interface Props extends CommonPageProps {
   alias: string;
@@ -89,16 +90,14 @@ const LinkNotFound = ({
                         <TableCell>
                           <a
                             href={new URL(link.alias, baseUrl).href}
-                            className={linkClassName}
-                          >
+                            className={linkClassName}>
                             {link.alias}
                           </a>
                         </TableCell>
                         <TableCell>
                           <a
                             href={link.url}
-                            className={linkClassName}
-                          >
+                            className={linkClassName}>
                             {link.url}
                           </a>
                         </TableCell>
@@ -133,15 +132,17 @@ function fireUsageMetric(
       variables: { linkId },
     })
     .then(() => {
-      console.log(
-        `[info:metric]: Added metric to link with alias "${linkAlias}"`
-      );
+      apolloLogger.info('metric.recorded', {
+        alias: linkAlias,
+        linkId,
+      });
     })
     .catch((err: Error) => {
-      console.error(
-        `[error:metric]: Failed to add metric for link with alias "${linkAlias}"`
-      );
-      console.error(err);
+      apolloLogger.error('metric.failed', {
+        alias: linkAlias,
+        linkId,
+        error: err.message,
+      });
     });
 }
 

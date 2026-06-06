@@ -43,15 +43,13 @@ export const TopNavigation: React.FC<Props> = ({
           variant="ghost"
           size="icon"
           onClick={() => setTheme(isDark ? 'light' : 'dark')}
-          suppressHydrationWarning
-        >
+          suppressHydrationWarning>
           {mounted ? (isDark ? '☀️' : '🌙') : '🌙'}
         </Button>
         {isAuthEnabled && (
           <Button variant="link" asChild>
             <a
-              href={isAuthenticated ? '/auth/logout' : '/auth/login'}
-            >
+              href={isAuthenticated ? '/auth/logout' : '/auth/login'}>
               {isAuthenticated ? (
                 <LogOut className="mr-2 h-4 w-4" />
               ) : (
