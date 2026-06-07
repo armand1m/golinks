@@ -8,6 +8,7 @@ import {
   ApolloLink,
 } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
+import { RetryLink } from '@apollo/client/link/retry';
 import { apolloLogger } from './apollo-logger';
 
 let apolloClient: ApolloClient<NormalizedCacheObject> | undefined;
@@ -121,7 +122,24 @@ function createApolloClient() {
   const errorLink = createErrorLink();
   const httpLink = createIsomorphicLink();
 
-  const links: ApolloLink[] = [errorLink];
+  const retryLink = new RetryLink({
+    delay: {
+      initial: 100,
+      max: 2000,
+      jitter: true,
+    },
+    attempts: {
+      max: 3,
+      retryIf: (error, _operation) => {
+        const isConnectionReset =
+          error?.message?.includes('ECONNRESET') ||
+          error?.message?.includes('fetch failed');
+        return !!isConnectionReset;
+      },
+    },
+  });
+
+  const links: ApolloLink[] = [errorLink, retryLink];
   if (requestLoggingEnabled) {
     links.push(createRequestLoggingLink());
   }

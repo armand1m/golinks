@@ -152,6 +152,18 @@ const validateConfig = (config: unknown, schema: Yup.AnySchema) => {
   }
 };
 
+const buildBaseUrl = (
+  proto: string,
+  hostname: string,
+  port: string | undefined,
+  environment: string
+): string => {
+  if (environment === 'production') {
+    return `${proto}://${hostname}`;
+  }
+  return `${proto}://${hostname}${port ? `:${port}` : ''}`;
+};
+
 const createConfig = (): ConfigInterface => {
   const {
     PROTO,
@@ -196,7 +208,12 @@ const createConfig = (): ConfigInterface => {
         hostname: APP_HOSTNAME,
         port: PORT ? parseInt(PORT, 10) : undefined,
         proto: PROTO,
-        baseUrl: `${PROTO}://${APP_HOSTNAME}${PORT ? `:${PORT}` : ''}`,
+        baseUrl: buildBaseUrl(
+          PROTO!,
+          APP_HOSTNAME!,
+          PORT,
+          ENVIRONMENT
+        ),
       },
       anonymous: {
         permissions: ANONYMOUS_PERMISSIONS,

@@ -43,3 +43,4 @@ __generated__
 run-cloud.sh
 
 /.claude/
+/.playwright-mcp/
