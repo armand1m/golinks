@@ -72,11 +72,7 @@ function createErrorLink() {
   });
 }
 
-function createRequestLoggingLink(enabled: boolean) {
-  if (!enabled) {
-    return ApolloLink.empty();
-  }
-
+function createRequestLoggingLink() {
   return new ApolloLink((operation, forward) => {
     const startTime = Date.now();
 
@@ -123,16 +119,15 @@ function createApolloClient() {
   }
 
   const errorLink = createErrorLink();
-  const requestLoggingLink = createRequestLoggingLink(
-    requestLoggingEnabled
-  );
   const httpLink = createIsomorphicLink();
 
-  const link = ApolloLink.from([
-    errorLink,
-    requestLoggingLink,
-    httpLink,
-  ]);
+  const links: ApolloLink[] = [errorLink];
+  if (requestLoggingEnabled) {
+    links.push(createRequestLoggingLink());
+  }
+  links.push(httpLink);
+
+  const link = ApolloLink.from(links);
 
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
