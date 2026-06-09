@@ -6,14 +6,12 @@ query searchLinks($search: String!) {
       alias
       isPrivate
       createdByEmail
+      usageCount
       linkAllowedEmails {
         nodes {
           id
           email
         }
-      }
-      linkUsageMetrics {
-        totalCount
       }
       recentUsageMetrics {
         nodes {

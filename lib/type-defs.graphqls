@@ -236,6 +236,16 @@ type Link implements Node {
   """
   createdByEmail: String
 
+  """
+  Denormalized count of total usage metrics for this link. Maintained by trigger on link_usage_metrics.
+  """
+  usageCount: BigInt!
+
+  """
+  Denormalized timestamp of the most recent usage metric. Maintained by trigger on link_usage_metrics.
+  """
+  lastAccessedAt: Datetime
+
   """Reads and enables pagination through a set of `LinkUsageMetric`."""
   linkUsageMetrics(
     """Only read the first `n` values of the set."""
@@ -321,6 +331,13 @@ A point in time as described by the [ISO
 8601](https://en.wikipedia.org/wiki/ISO_8601) standard. May or may not include a timezone.
 """
 scalar Datetime
+
+"""
+A signed eight-byte integer. The upper big integer values are greater than the
+max value for a JavaScript number. Therefore all big integers will be output as
+strings and not numbers.
+"""
+scalar BigInt
 
 """A connection to a list of `LinkUsageMetric` values."""
 type LinkUsageMetricsConnection {
@@ -798,6 +815,16 @@ input LinkInput {
   The email of the user who created this link. Used for private link ownership tracking.
   """
   createdByEmail: String
+
+  """
+  Denormalized count of total usage metrics for this link. Maintained by trigger on link_usage_metrics.
+  """
+  usageCount: BigInt
+
+  """
+  Denormalized timestamp of the most recent usage metric. Maintained by trigger on link_usage_metrics.
+  """
+  lastAccessedAt: Datetime
 }
 
 """The output of our update `LinkAllowedEmail` mutation."""
@@ -1014,6 +1041,16 @@ input LinkPatch {
   The email of the user who created this link. Used for private link ownership tracking.
   """
   createdByEmail: String
+
+  """
+  Denormalized count of total usage metrics for this link. Maintained by trigger on link_usage_metrics.
+  """
+  usageCount: BigInt
+
+  """
+  Denormalized timestamp of the most recent usage metric. Maintained by trigger on link_usage_metrics.
+  """
+  lastAccessedAt: Datetime
 }
 
 """All input for the `updateLink` mutation."""
