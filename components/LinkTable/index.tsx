@@ -87,7 +87,7 @@ export const LinkTable: React.FC<Props> = ({
                 />
               </TableCell>
               <TableCell className="text-center">
-                {link.linkUsageMetrics.totalCount}
+                {link.usageCount}
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
